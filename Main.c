@@ -108,6 +108,10 @@ unsigned int gl_un_RULAControl = 3276;      //3276 = 2.000 V
 //unsigned char delta = ( RULA_MAX - RULA_MIN) / 2;
 unsigned int nDelta = ( RULA_MAX - RULA_MIN) / 4;
 
+#define VPRC_SLIDING_ROUND 10              //скользящее среднее напряжения системы регулировки периметра
+short gl_shVprc[VPRC_SLIDING_ROUND];
+int gl_nVrpcCounter = 0;
+
 #define MEANING_IMP_PERIOD_100 100
 #define MEANING_IMP_PERIOD_200 200
 #define MEANING_IMP_PERIOD_300 300
@@ -130,6 +134,8 @@ char bAsyncDu = 0;                //флаг передачи времени SA или приращ. угла в 
 short nSentPacksCounter = 0;			              //счетчик посылок
 int nSentPacksRound = SHORT_OUTPUT_PACK_LEN;    //круг счетчика посылок
 char gl_c_OutPackCounter = 0;                    //выдаваемый наружу счётчик посылок
+
+
 
 int ADCChannel = 1;						//читаемый канал АЦП
 										//0 = ADC1 = 78 нога = UTD1
@@ -203,6 +209,13 @@ void IRQ_Handler (void) __irq
   printf("IRQ o\n");
 #endif
 */
+}
+
+double CalcSlidingAverage( void) {
+  int i;
+  double summ = 0.;
+  for( i=0; i<VPRC_SLIDING_ROUND; summ += gl_shVprc[i++]);
+  return (summ / VPRC_SLIDING_ROUND);
 }
 
 void pause_T0( int n) {
@@ -307,11 +320,11 @@ void send_pack( signed short angle_inc1, short param_indicator, short analog_par
 */
 
   //***************************************************************************
-	//START_MARKER
+  //START_MARKER
   //***************************************************************************
-	putchar_nocheck( 0x55);
-	putchar_nocheck( 0xAA);
-	
+  putchar_nocheck( 0x55);
+  putchar_nocheck( 0xAA);
+
   //***************************************************************************
   //    dN
   //***************************************************************************
@@ -352,7 +365,7 @@ void send_pack( signed short angle_inc1, short param_indicator, short analog_par
     angle_inc_corr = ( signed short) ( angle_inc1 * 100.);
 
     f_dN = ( float) ( ( signed int) angle_inc1);
-	  dbl_dN = ( double) ( ( signed int) angle_inc1);
+    dbl_dN = ( double) ( ( signed int) angle_inc1);
   }
 
   /*  
@@ -379,7 +392,6 @@ void send_pack( signed short angle_inc1, short param_indicator, short analog_par
   //ANALOG PARAMETER INDICATOR
   //***************************************************************************
   putchar_nocheck( ( gl_b_PerimeterReset ? 0x80 : 0x00) + param_indicator & 0xff);
-  gl_b_PerimeterReset = 0;
   cCheckSumm += (( gl_b_PerimeterReset ? 0x80 : 0x00) + param_indicator & 0xff);
 
   //***************************************************************************
@@ -799,7 +811,7 @@ void main() {
   double db_dN1, db_dN2, dbU1, dbU2;
   float Coeff;
 
-  double V_piezo;
+  double dbl_V_piezo = 0.;
   double temp_t;
 
   //РЕЖИМ dN_dU_Cnt
@@ -811,7 +823,7 @@ void main() {
   //int n;
   int t2val_old;      //2014-08-27 - enabling external oscillator
 
-  long lTacts = 0;
+  long long llTacts = 0;
 
   bCalibProcessState = 0;    //0 - no calibration
                              //1 - processing min_t_point 1st thermo
@@ -1360,9 +1372,6 @@ void main() {
   //пауза 0.5 сек (32768 * 0.5 = 16384)
   pause( 16384);
 
-  //засекаем 5 sec
-  prt2val = T2VAL;
-
   while( 1) {
 
     //измеряем ток I1
@@ -1394,11 +1403,14 @@ void main() {
       //не зажглось
 
       if( nFiringTry < 25) {
-#ifdef DEBUG
-  printf( "DBG: Applying 3kV for 1 sec\n");
-#endif
+
 
         if( nFiringTry > 0 && ( nFiringTry % 5) == 0) { //if( nFiringTry % 5) == 0)
+
+#ifdef DEBUG
+  printf( "DBG: Relax pause 1 sec\n");
+#endif
+
           //выключаем лазер
           GP4DAT |= 1 << (16 + 0);        //ONHV       (p4.0) = 1
           GP4SET = 1 << (16 + 0);         //дублёр
@@ -1410,6 +1422,10 @@ void main() {
           GP4DAT &= ~( 1 << (16 + 0));    //ONHV   (p4.0) = 0
           GP4CLR = ( 1 << ( 16 + 0));     //дублёр
         }
+
+#ifdef DEBUG
+  printf( "DBG: Applying 3kV for 1 sec\n");
+#endif
 
         //включаем усиленный поджиг
         GP4DAT &= ~( 1 << (16 + 1));      //OFF3KV (p4.1) = 0
@@ -1613,11 +1629,21 @@ void main() {
 
   nT2RepeatBang = T2VAL;
 
+
+  //FAKE ('VERACITY DATA' flag on)
+  gl_b_PerimeterReset = 1;
+
   //Software version
   send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + ( VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
+  //Device.serial.Num
   send_pack( 0, 26,   flashParamDeviceId & 0xFF);         //Device_Num.Byte1
   send_pack( 0, 27, ( flashParamDeviceId & 0xFF00) >> 8); //Device_Num.Byte2
+
+  //FAKE ('VERACITY DATA' flag off)
+  gl_b_PerimeterReset = 0;
+
+
 
   gl_sn_MeaningCounterRound = 100;
 
@@ -1857,9 +1883,11 @@ void main() {
           flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
           DACConfiguration();
           GP0DAT |= ( 1 << (16 + 5));	  //RP_P   (p0.5) = 1
+
           nRppTimer = T1VAL;
+          gl_b_PerimeterReset = 1;
+
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
-          //gl_b_PerimeterReset = 1;
         break;
 
         case 4: //установить минимальный ток I1
@@ -1972,16 +2000,25 @@ void main() {
         case 16:    //команда выключение интегратора
           GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1 (выключение)
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
+          gl_b_PerimeterReset = 1;  //устанавливаем флаг недостоверности данных (1=прошло выключение)
+          //nRppTimer = ;           //<-- ВРЕМЯ НЕ ЗАСЕКАЕМ! ФЛАГ НЕ ОПУСТИТСЯ НИКОГДА (только по команде включить интегратор)
         break;
 
         case 17:    //команда включения интегратора
           GP0DAT &= ~( 1 << (16 + 5));   //RP_P   (p0.5) = 0 (включение)
+
+          gl_b_PerimeterReset = 2;    //устанавливаем флаг недостоверности данных (2=прошло включение)
+          nRppTimer = T1VAL;          //<-- ЗАСЕКАЕМ ВРЕМЯ! И ЧЕРЕЗ СЕКУНДУ ФЛАГ БУДЕТ СНЯТ
+
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
         break;
 
         case 18:    //команда сброса интегратора
           GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1 (выключение)
-          nRppTimer = T1VAL;
+
+          nRppTimer = T1VAL;        //<-- ЗАСЕКАЕМ ВРЕМЯ! И ЧЕРЕЗ СЕКУНДУ ИНТЕГРАТОР ВКЛЮЧИТСЯ, ФЛАГ перейдёт в состояние 2, а ещё через секунду флаг перейдёт в состояние 0 (данные достоверны)
+          gl_b_PerimeterReset = 1;  //устанавливаем флаг недостоверности данных (1=прошло выключение)
+
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
         break;
 
@@ -2099,7 +2136,7 @@ void main() {
     if( GP0DAT & 0x10) {  //на ноге P0.4 есть сигнал
 
       if( gl_b_SA_Processed == 0) { //если в этом SA цикле мы его еще не обрабатывали
-        lTacts++;
+        llTacts++;
 
         //В тестовых целях делаем сигнал на линии P0.0
         GP0DAT |= 1 << ( 16);       //тестовая линия p0.0 set
@@ -2407,6 +2444,7 @@ void main() {
             //case 0: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 0, gl_ssh_ampl_angle);      break; //AmplAng с ДУСа
 
             case 1: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 1, gl_ssh_Utd2);      break;      //UTD2
+            //case 1: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 1, ( short) ( ( dbl_V_piezo + 100.) / 200. * 65535.));      break;         //скользящее среднее системы регулировки периметра
             //case 1: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 1, gl_un_RULAControl); break;     //RULA
             //case 1: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 1, dMeanImps); break;             //dMeanImps (сигнал который мы пытаемся приблизить к заданной амплитуде)
 
@@ -2495,11 +2533,15 @@ void main() {
         //автоматическая перестройка периметра
         // ************************************************************************************
         if( nSentPacksCounter == 4) {
-          V_piezo = ( ( gl_ssh_Perim_Voltage / 4095. * 3.) - 2.048) * 100.;
-          if( fabs( V_piezo) > 80.) {
+          gl_shVprc[ gl_nVrpcCounter] = gl_ssh_Perim_Voltage;
+          gl_nVrpcCounter = (++gl_nVrpcCounter) % VPRC_SLIDING_ROUND;
+
+          dbl_V_piezo = ( ( CalcSlidingAverage() / 4095. * 3.) - 2.048) * 100.;
+
+          if( fabs( dbl_V_piezo) > 80.) {
             flashParamStartMode = 125;
             DACConfiguration();
-            GP0DAT |= ( 1 << (16 + 5));	  //RP_P   (p0.5) = 1
+            GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
             nRppTimer = T1VAL;
             nSentPacksRound = LONG_OUTPUT_PACK_LEN;
             gl_b_PerimeterReset = 1;
@@ -2626,11 +2668,35 @@ void main() {
         //обработка флага сброса RP_P
         //**********************************************************************
         if( nRppTimer != 0) {
-          if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768) {    //длительность RESETа тут (1s)
-            //включение интегратора в системе регулировки периметра
-            GP0DAT &= ~( 1 << (16 + 5));  //RP_P   (p0.5) = 0
-            nRppTimer = 0;
+          if( gl_b_PerimeterReset == 1) {
+            if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768 * 0.1) {    //длительность верхней части RESET-сигнала 0.100 s
+              //прошла первая часть (0.1 сек после выключения интегратора) ==> включаем интегратор, и засекаем время ещё раз
+              //включение интегратора в системе регулировки периметра
+              GP0DAT &= ~( 1 << (16 + 5));  //RP_P   (p0.5) = 0
+
+              //засекаем повторно таймер
+              nRppTimer = T1VAL;
+              gl_b_PerimeterReset = 2;
+            }
+          }
+          else if( gl_b_PerimeterReset == 2) {
+            if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768 * 0.1) {    //длительность нижней части RESET-сигнала 0.100 s
+              //прошла вторая часть (0.1 сек после включения интегратора) ==> говорим что интегратор настроился, и данные достоверны, и таймер нам больше не нужен
+              //сбрасываем флаг достоверности данных в состоние "достоверно"
+              gl_b_PerimeterReset = 0;
+
+              //больше заводить таймер не надо
+              nRppTimer = 0;
+              
+            }
+          }
+          else {
+            //очень странная ситуация, но давайте сбросим всё как будто всё заработало
+            //сбрасываем флаг достоверности данных в состоние "достоверно"
             gl_b_PerimeterReset = 0;
+
+            //больше заводить таймер не надо
+            nRppTimer = 0;
           }
         }
 
