@@ -17,6 +17,7 @@ File 1,1,<.\deadloops.c><deadloops.c> 0x0
 File 1,1,<.\settings.c><settings.c> 0x0 
 File 1,5,<.\settings.h><settings.h> 0x0 
 File 1,5,<.\deadloops.h><deadloops.h> 0x0 
+File 1,1,<.\ProcessingIncomingCommand.c><ProcessingIncomingCommand.c> 0x0 
 
 
 Options 1,0,0  // Target 'Target 1'
@@ -45,7 +46,7 @@ Options 1,0,0  // Target 'Target 1'
  OrgReg (ÿADI\)
  TgStat=16
  OutDir (.\)
- OutName (t39_slg_mc_322)
+ OutName (t39_slg_mc_324)
  GenApp=1
  GenLib=0
  GenHex=1

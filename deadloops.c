@@ -1,13 +1,21 @@
 #include <ADuC7026.h>
+#include <stdio.h>
+
 #include "settings.h"
 #include "version.h"
 #include "errors.h"
+#include "AnalogueParamsConstList.h"
+
+#include "debug.h"
 
 //declared in Main.c
 extern char gl_c_EmergencyCode;
 extern int gl_n_prT1VAL;
 extern signed short gl_ssh_SA_time;
 extern signed short gl_ssh_ampl_angle;
+extern signed short gl_ssh_angle_inc;
+extern signed short gl_ssh_angle_inc_prev;
+extern short gl_nSentPackIndex;
 
 #define IN_COMMAND_BUF_LEN 3
 extern char pos_in_in_buf;
@@ -23,135 +31,183 @@ extern unsigned short flashParamI2min;            //контрольное значение тока по
 extern unsigned short flashParamAmplAngMin1;      //контрольное значение раскачки с ДУСа
 extern unsigned short flashParamDecCoeff;         //коэффициент вычета
 extern unsigned short flashParamSignCoeff;        //знаковый коэффициент
+extern unsigned short flashParamHvApplyCount;     //HV_applies tries amount
+extern unsigned short flashParamHvApplyDurat;     //HV_applies tries duration [msec]
+extern unsigned short flashParamHvApplyPacks;     //HV_applies packs
+extern unsigned short flashParamDeviceId;         //ID устройства
+extern unsigned short flashParamDateYear;         //дата прибора.год
+extern unsigned short flashParamDateMonth;        //дата прибора.месяц
+extern unsigned short flashParamDateDay;          //дата прибора.день
+extern char flashParamOrg[];                      //название организации
+
+extern unsigned short nFiringTry;                 //число включений HV при поджиге
 
 //implemented in Main.c
-extern void send_pack( signed short angle_inc1, short param_indicator, short analog_param);
+extern void send_pack( short analog_param);
 extern void pause( int n);
+extern void processIncomingCommand( void);
 
-
-void deadloop_no_firing( void) {
+void deadloop_no_firing( int nError) {
   //ОБРАБОТКА ОТКАЗА ПОДЖИГА
 #ifdef DEBUG
   printf("DBG: NO LASER FIREUP! DEADLOOP.\n");
 #endif
 
   //выставляем код ошибки
-  gl_c_EmergencyCode = ERROR_NO_LASER_FIRING;
+  gl_c_EmergencyCode = nError;
 
-  //высылка настроечных параметров
-  send_pack( 0, 7, flashParamAmplitudeCode);
-  send_pack( 0, 8, flashParamTactCode);
-  send_pack( 0, 9, flashParamMCoeff);
-  send_pack( 0, 10, flashParamStartMode);
-  send_pack( 0, 11, flashParamI1min);
-  send_pack( 0, 12, flashParamI2min);
-  send_pack( 0, 13, flashParamAmplAngMin1);
-  send_pack( 0, 14, flashParamDecCoeff);
-  send_pack( 0, 15, flashParamSignCoeff);
-  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+  //показания приращения угла = 0
+  gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
+
+  //выдача данных
+    gl_nSentPackIndex = AMPLITUDE;  send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;  send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;    send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;  send_pack( flashParamStartMode);
+    gl_nSentPackIndex = CONTROL_I1; send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2; send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA; send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = DECCOEFF;   send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = SIGNCOEFF;  send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   gl_n_prT1VAL = T1VAL;
   while( 1) {
     //пауза 0,1 секунда
     pause( 327);
 
-    gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+    gl_ssh_SA_time = ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
     gl_n_prT1VAL = T1VAL;
 
     //**********************************************************************
     // Обработка буфера входящих команд
     //**********************************************************************
-    if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
-      switch( input_buffer[0]) {
-        case 0: //установить код амплитуды
-          flashParamAmplitudeCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 7, flashParamAmplitudeCode);
-        break;
+    processIncomingCommand();
 
-        case 1: //установить код такта подставки
-          flashParamTactCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 8, flashParamTactCode);
-        break;
+    //выдача настроечных параметров
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( flashParamHvApplyCount);
+    gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( flashParamHvApplyDurat);
+    gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( flashParamHvApplyPacks);
+    gl_nSentPackIndex = SIGNCOEFF;    send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;       send_pack( flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;       send_pack( flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;       send_pack( flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;       send_pack( flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;       send_pack( flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;       send_pack( flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;       send_pack( flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;       send_pack( flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;       send_pack( flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;       send_pack( flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;       send_pack( flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;       send_pack( flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;       send_pack( flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;      send_pack( flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;      send_pack( flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;      send_pack( flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;      send_pack( flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;      send_pack( flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;      send_pack( flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;      send_pack( flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
-        case 2: //установить коэффициент M
-          flashParamMCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 9, flashParamMCoeff);
-        break;
+  } //"мертвый" while
+}
 
-        case 3: //установить начальную моду
-          flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 10, flashParamStartMode);
-        break;
-        
-        case 4: //установить минимальный ток I1
-          flashParamI1min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 11, flashParamI1min);
-        break;
+void deadloop_current_unstable( int nError) {
+  //ОБРАБОТКА ОТКАЗА ПОДЖИГА
+#ifdef DEBUG
+  printf("DBG: NO LASER FIREUP! DEADLOOP.\n");
+#endif
 
-        case 5: //установить минимальный ток I2
-          flashParamI2min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 12, flashParamI2min);
-        break;
+  //выставляем код ошибки
+  gl_c_EmergencyCode = nError;
 
-        case 6: //установить 1ый минимум сигнала AmplAng
-          flashParamAmplAngMin1 = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-        break;
+  //показания приращения угла = 0
+  gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
-        case 7: //установить коэффициент вычета
-          flashParamDecCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 14, flashParamDecCoeff);
-        break;
+  //выдача данных
+    gl_nSentPackIndex = AMPLITUDE;  send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;  send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;    send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;  send_pack( flashParamStartMode);
+    gl_nSentPackIndex = CONTROL_I1; send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2; send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA; send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = DECCOEFF;   send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = SIGNCOEFF;  send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
-        case 8: //установить знаковый коэффициент dU
-          flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 15, flashParamSignCoeff);
-        break;
+  gl_n_prT1VAL = T1VAL;
+  while( 1) {
+    //пауза 0,1 секунда
+    pause( 327);
 
-        /*
-        case 9: //в асинхр. режиме вылючить вывод SA (включить вывод dU)
-        	bAsyncDu = 1;
-        break;
+    gl_ssh_SA_time = ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+    gl_n_prT1VAL = T1VAL;
 
-        case 10: //в асинхр. режиме выключить вывод dU (включить вывод SA)
-        	bAsyncDu = 0;
-        break; */
+    //**********************************************************************
+    // Обработка буфера входящих команд
+    //**********************************************************************
+    processIncomingCommand();
 
-        case 49: //запрос параметров
-          send_pack( 0, 7, flashParamAmplitudeCode);
-          send_pack( 0, 8, flashParamTactCode);
-          send_pack( 0, 9, flashParamMCoeff);
-          send_pack( 0, 10, flashParamStartMode);
-          send_pack( 0, 11, flashParamI1min);
-          send_pack( 0, 12, flashParamI2min);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-          send_pack( 0, 14, flashParamDecCoeff);
-          send_pack( 0, 15, flashParamSignCoeff);
-          send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-        break;
-
-        case 50: //сохранить параметры во флэш память
-          save_params(); break;
-
-        case 51: //перезагрузить параметры из флэш-памяти и показать их
-          load_params(); break;
-      }
-      
-      pos_in_in_buf = 0;
-    }
-    else
-      //Если входящих команд не было, то
-      //посылка пустого сообщения с ошибкой
-      send_pack( 0, 0, 0);
+    //выдача настроечных параметров
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( flashParamHvApplyCount);
+    gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( flashParamHvApplyDurat);
+    gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( flashParamHvApplyPacks);
+    gl_nSentPackIndex = SIGNCOEFF;    send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;       send_pack( flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;       send_pack( flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;       send_pack( flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;       send_pack( flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;       send_pack( flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;       send_pack( flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;       send_pack( flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;       send_pack( flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;       send_pack( flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;       send_pack( flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;       send_pack( flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;       send_pack( flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;       send_pack( flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;      send_pack( flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;      send_pack( flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;      send_pack( flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;      send_pack( flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;      send_pack( flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;      send_pack( flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;      send_pack( flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   } //"мертвый" while
 }
 
 void deadloop_no_hangerup( void) {
   //ОБРАБОТКА ОТКАЗА РАСКАЧКИ ВИБРОПОДВЕСА
+  double dStartAmplAngCheck = ( double) flashParamAmplAngMin1 / 65535. * 3.;
+
 #ifdef DEBUG
   printf("DBG: NO HANGER VIBRATION! DEADLOOP.\n");
 #endif
+
+  //показания приращения угла = 0
+  gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
+
   //выставляем код ошибки
   gl_c_EmergencyCode = ERROR_INITIAL_AMPL_ANG_TEST_FAIL;
 
@@ -159,116 +215,65 @@ void deadloop_no_hangerup( void) {
   pause(10);
   ADCCON |= 0x80;   //запуск преобразования
 
-  //высылка настроечных параметров
-  send_pack( 0, 7, flashParamAmplitudeCode);
-  send_pack( 0, 8, flashParamTactCode);
-  send_pack( 0, 9, flashParamMCoeff);
-  send_pack( 0, 10, flashParamStartMode);
-  send_pack( 0, 11, flashParamI1min);
-  send_pack( 0, 12, flashParamI2min);
-  send_pack( 0, 13, flashParamAmplAngMin1);
-  send_pack( 0, 14, flashParamDecCoeff);
-  send_pack( 0, 15, flashParamSignCoeff);
-  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-
   gl_n_prT1VAL = T1VAL;
   while( 1) {
-  	//пауза 0,1 секунда
+    //пауза 0,1 секунда
     pause( 327);
 
-    gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+    gl_ssh_SA_time = ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
     gl_n_prT1VAL = T1VAL;
 
     //измерение AmplAng (и ТОЛЬКО ЕГО)
-    while (!( ADCSTA & 0x01)){}			// ожидаем конца преобразования АЦП (теоретически когда мы приходим сюда он уже должен быть готов)
+    while (!( ADCSTA & 0x01)){}     // ожидаем конца преобразования АЦП (теоретически когда мы приходим сюда он уже должен быть готов)
     gl_ssh_ampl_angle = (ADCDAT >> 16);
     ADCCON |= 0x80;                 //запуск преобразования
 
+#ifdef DEBUG
+    printf( "DBG: AA: %d = %.2fV    Control value: %.2f\n",
+            gl_ssh_ampl_angle,
+            3. * ( double) gl_ssh_ampl_angle / 4095.,
+            dStartAmplAngCheck);
+#endif
     //**********************************************************************
-	  // Обработка буфера входящих команд
-	  //**********************************************************************
-    if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
-    	switch( input_buffer[0]) {
-      	case 0: //установить код амплитуды
-          flashParamAmplitudeCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 7, flashParamAmplitudeCode);
-        break;
+    // Обработка буфера входящих команд
+    //**********************************************************************
+    processIncomingCommand();
 
-        case 1: //установить код такта подставки
-          flashParamTactCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 8, flashParamTactCode);
-        break;
-
-        case 2: //установить коэффициент M
-        	flashParamMCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 9, flashParamMCoeff);
-        break;
-
-        case 3: //установить начальную моду
-        	flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 10, flashParamStartMode);
-        break;
-        
-        case 4: //установить минимальный ток I1
-        	flashParamI1min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 11, flashParamI1min);
-        break;
-
-        case 5: //установить минимальный ток I2
-        	flashParamI2min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 12, flashParamI2min);
-        break;
-
-        case 6: //установить 1ый минимум сигнала AmplAng
-        	flashParamAmplAngMin1 = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-        break;
-
-        case 7: //установить коэффициент вычета
-        	flashParamDecCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 14, flashParamDecCoeff);
-        break;
-
-        case 8: //установить знаковый коэффициент dU
-        	flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 15, flashParamSignCoeff);
-        break;
-
-        /*
-        case 9: //в асинхр. режиме вылючить вывод SA (включить вывод dU)
-        	bAsyncDu = 1;
-        break;
-
-        case 10: //в асинхр. режиме выключить вывод dU (включить вывод SA)
-        	bAsyncDu = 0;
-        break; */
-
-        case 49: //запрос параметров
-          send_pack( 0, 7, flashParamAmplitudeCode);
-          send_pack( 0, 8, flashParamTactCode);
-          send_pack( 0, 9, flashParamMCoeff);
-          send_pack( 0, 10, flashParamStartMode);
-          send_pack( 0, 11, flashParamI1min);
-          send_pack( 0, 12, flashParamI2min);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-          send_pack( 0, 14, flashParamDecCoeff);
-          send_pack( 0, 15, flashParamSignCoeff);
-          send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-        break;
-
-        case 50: //сохранить параметры во флэш память
-        	save_params(); break;
-
-        case 51: //перезагрузить параметры из флэш-памяти и показать их
-        	load_params(); break;
-      }
-      
-      pos_in_in_buf = 0;
-    }
-    else
-    	//Если входящих команд не было, то
-      //посылка пустого сообщения с ошибкой
-      send_pack( 0, 6, gl_ssh_ampl_angle);
+    //выдача данных
+    gl_nSentPackIndex = AMPLANG_DUS;  send_pack( gl_ssh_ampl_angle);
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( flashParamHvApplyCount);
+    gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( flashParamHvApplyDurat);
+    gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( flashParamHvApplyPacks);
+    gl_nSentPackIndex = SIGNCOEFF;    send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;       send_pack( flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;       send_pack( flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;       send_pack( flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;       send_pack( flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;       send_pack( flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;       send_pack( flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;       send_pack( flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;       send_pack( flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;       send_pack( flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;       send_pack( flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;       send_pack( flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;       send_pack( flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;       send_pack( flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;      send_pack( flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;      send_pack( flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;      send_pack( flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;      send_pack( flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;      send_pack( flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;      send_pack( flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;      send_pack( flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   } //"мертвый" захват отказа раскачки виброподвеса
 }
@@ -281,228 +286,57 @@ void deadloop_no_tact( int nError) {
   //выставляем код ошибки
   gl_c_EmergencyCode = nError;
 
-  //высылка настроечных параметров
-  send_pack( 0, 7, flashParamAmplitudeCode);
-  send_pack( 0, 8, flashParamTactCode);
-  send_pack( 0, 9, flashParamMCoeff);
-  send_pack( 0, 10, flashParamStartMode);
-  send_pack( 0, 11, flashParamI1min);
-  send_pack( 0, 12, flashParamI2min);
-  send_pack( 0, 13, flashParamAmplAngMin1);
-  send_pack( 0, 14, flashParamDecCoeff);
-  send_pack( 0, 15, flashParamSignCoeff);
-  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+  //показания приращения угла = 0
+  gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
   gl_n_prT1VAL = T1VAL;
   while( 1) {
     //пауза 0,1 секунда
     pause( 327);
 
-    gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+    gl_ssh_SA_time = ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
     gl_n_prT1VAL = T1VAL;
 
     //**********************************************************************
     // Обработка буфера входящих команд
     //**********************************************************************
-    if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
-      switch( input_buffer[0]) {
-        case 0: //установить код амплитуды
-          flashParamAmplitudeCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 7, flashParamAmplitudeCode);
-        break;
+    processIncomingCommand();
 
-        case 1: //установить код такта подставки
-          flashParamTactCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 8, flashParamTactCode);
-        break;
+    //выдача настроечных параметров
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
+    gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( flashParamHvApplyCount);
+    gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( flashParamHvApplyDurat);
+    gl_nSentPackIndex = HV_APPLY_PACKS; send_pack( flashParamHvApplyPacks);
+    gl_nSentPackIndex = HV_APPLY_COUNT_TR;  send_pack( nFiringTry);
+    gl_nSentPackIndex = SIGNCOEFF;    send_pack( flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;       send_pack( flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;       send_pack( flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;       send_pack( flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;       send_pack( flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;       send_pack( flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;       send_pack( flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;       send_pack( flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;       send_pack( flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;       send_pack( flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;       send_pack( flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;       send_pack( flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;       send_pack( flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;       send_pack( flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;      send_pack( flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;      send_pack( flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;      send_pack( flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;      send_pack( flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;      send_pack( flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;      send_pack( flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;      send_pack( flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
-        case 2: //установить коэффициент M
-          flashParamMCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 9, flashParamMCoeff);
-        break;
-
-        case 3: //установить начальную моду
-          flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 10, flashParamStartMode);
-        break;
-        
-        case 4: //установить минимальный ток I1
-          flashParamI1min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 11, flashParamI1min);
-        break;
-
-        case 5: //установить минимальный ток I2
-          flashParamI2min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 12, flashParamI2min);
-        break;
-
-        case 6: //установить 1ый минимум сигнала AmplAng
-          flashParamAmplAngMin1 = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-        break;
-
-        case 7: //установить коэффициент вычета
-          flashParamDecCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 14, flashParamDecCoeff);
-        break;
-
-        case 8: ////установить знаковый коэффициент dU
-          flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 15, flashParamSignCoeff);
-        break;
-
-        /*
-        case 9: //в асинхр. режиме вылючить вывод SA (включить вывод dU)
-          bAsyncDu = 1;
-        break;
-
-        case 10: //в асинхр. режиме выключить вывод dU (включить вывод SA)
-          bAsyncDu = 0;
-        break; */
-
-        case 49: //запрос параметров
-          send_pack( 0, 7, flashParamAmplitudeCode);
-          send_pack( 0, 8, flashParamTactCode);
-          send_pack( 0, 9, flashParamMCoeff);
-          send_pack( 0, 10, flashParamStartMode);
-          send_pack( 0, 11, flashParamI1min);
-          send_pack( 0, 12, flashParamI2min);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-          send_pack( 0, 14, flashParamDecCoeff);
-          send_pack( 0, 15, flashParamSignCoeff);
-          send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-        break;
-
-        case 50: //сохранить параметры во флэш память
-          save_params(); break;
-
-        case 51: //перезагрузить параметры из флэш-памяти и показать их
-          load_params(); break;
-      }
-
-      pos_in_in_buf = 0;
-    }
-    else {
-      //Если входящих команд не было, то
-      //посылка пустого сообщения с ошибкой
-      send_pack( 0, 0, 0);
-    }
-
-  } //"мертвый" while
-}
-
-void deadloop_current_unstable( void) {
-  //ОБРАБОТКА deadloop ПАДЕНИЯ ТОКА
-
-  //выставляем код ошибки
-  gl_c_EmergencyCode = ERROR_CURRENT_UNSTABLE;
-
-  
-  //высылка настроечных параметров
-  send_pack( 0, 7, flashParamAmplitudeCode);
-  send_pack( 0, 8, flashParamTactCode);
-  send_pack( 0, 9, flashParamMCoeff);
-  send_pack( 0, 10, flashParamStartMode);
-  send_pack( 0, 11, flashParamI1min);
-  send_pack( 0, 12, flashParamI2min);
-  send_pack( 0, 13, flashParamAmplAngMin1);
-  send_pack( 0, 14, flashParamDecCoeff);
-  send_pack( 0, 15, flashParamSignCoeff);
-  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-
-  gl_n_prT1VAL = T1VAL;
-  while( 1) {
-    //пауза 0,1 секунда
-    pause( 327);
-
-    gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
-    gl_n_prT1VAL = T1VAL;
-
-    //**********************************************************************
-    // Обработка буфера входящих команд
-    //**********************************************************************
-    if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
-      switch( input_buffer[0]) {
-        case 0: //установить код амплитуды
-          flashParamAmplitudeCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 7, flashParamAmplitudeCode);
-        break;
-
-        case 1: //установить код такта подставки
-          flashParamTactCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 8, flashParamTactCode);
-        break;
-
-        case 2: //установить коэффициент M
-          flashParamMCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 9, flashParamMCoeff);
-        break;
-
-        case 3: //установить начальную моду
-          flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 10, flashParamStartMode);
-        break;
-        
-        case 4: //установить минимальный ток I1
-          flashParamI1min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 11, flashParamI1min);
-        break;
-
-        case 5: //установить минимальный ток I2
-          flashParamI2min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 12, flashParamI2min);
-        break;
-
-        case 6: //установить 1ый минимум сигнала AmplAng
-          flashParamAmplAngMin1 = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-        break;
-
-        case 7: //установить коэффициент вычета
-          flashParamDecCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 14, flashParamDecCoeff);
-        break;
-
-        case 8: //установить знаковый коэффициент dU
-          flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
-          send_pack( 0, 15, flashParamSignCoeff);
-        break;
-
-        /*
-        case 9: //в асинхр. режиме вылючить вывод SA (включить вывод dU)
-        	bAsyncDu = 1;
-        break;
-
-        case 10: //в асинхр. режиме выключить вывод dU (включить вывод SA)
-        	bAsyncDu = 0;
-        break; */
-
-        case 49: //запрос параметров
-          send_pack( 0, 7, flashParamAmplitudeCode);
-          send_pack( 0, 8, flashParamTactCode);
-          send_pack( 0, 9, flashParamMCoeff);
-          send_pack( 0, 10, flashParamStartMode);
-          send_pack( 0, 11, flashParamI1min);
-          send_pack( 0, 12, flashParamI2min);
-          send_pack( 0, 13, flashParamAmplAngMin1);
-          send_pack( 0, 14, flashParamDecCoeff);
-          send_pack( 0, 15, flashParamSignCoeff);
-          send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
-        break;
-
-        case 50: //сохранить параметры во флэш память
-          save_params(); break;
-
-        case 51: //перезагрузить параметры из флэш-памяти и показать их
-          load_params(); break;
-      }
-      
-      pos_in_in_buf = 0;
-    }
-    else
-      //Если входящих команд не было, то
-      //посылка пустого сообщения с ошибкой
-      send_pack( 0, 0, 0);
-
-  } //"мертвый" while
+  }  //"мертвый" while отсутствия тактирования
 }
