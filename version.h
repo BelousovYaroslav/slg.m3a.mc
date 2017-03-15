@@ -2,7 +2,7 @@
 #define VERSION_H
 
 #define VERSION_MAJOR 3
-#define VERSION_MIDDLE 1
-#define VERSION_MINOR 10
+#define VERSION_MIDDLE 2
+#define VERSION_MINOR 2
 
 #endif
