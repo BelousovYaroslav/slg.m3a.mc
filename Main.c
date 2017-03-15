@@ -106,7 +106,7 @@ unsigned int gl_un_RULAControl = 3276;      //3276 = 2.000 V
 
 
 //unsigned char delta = ( RULA_MAX - RULA_MIN) / 2;
-unsigned int nDelta = ( RULA_MAX - RULA_MIN) / 2;
+unsigned int nDelta = ( RULA_MAX - RULA_MIN) / 4;
 
 #define MEANING_IMP_PERIOD_100 100
 #define MEANING_IMP_PERIOD_200 200
@@ -421,16 +421,16 @@ void send_pack( signed short angle_inc1, short param_indicator, short analog_par
       putchar_nocheck( gl_ssh_SA_time & 0xff);
       cCheckSumm += ( gl_ssh_SA_time & 0xff);
 
-	    putchar_nocheck( ( gl_ssh_SA_time & 0xff00) >> 8);
+      putchar_nocheck( ( gl_ssh_SA_time & 0xff00) >> 8);
       cCheckSumm += ( ( gl_ssh_SA_time & 0xff00) >> 8);
     }
   }
   else {
     //синхронный режим
-	  putchar_nocheck( gl_ssh_SA_time & 0xff);
+    putchar_nocheck( gl_ssh_SA_time & 0xff);
     cCheckSumm += ( gl_ssh_SA_time & 0xff);
 
-	  putchar_nocheck( ( gl_ssh_SA_time & 0xff00) >> 8);
+    putchar_nocheck( ( gl_ssh_SA_time & 0xff00) >> 8);
     cCheckSumm += ( ( gl_ssh_SA_time & 0xff00) >> 8);
   }
 
@@ -445,7 +445,7 @@ void send_pack( signed short angle_inc1, short param_indicator, short analog_par
   //***************************************************************************
   //EMERGENCY CODE
   //***************************************************************************
-	putchar_nocheck( gl_c_EmergencyCode);
+  putchar_nocheck( gl_c_EmergencyCode);
   cCheckSumm += gl_c_EmergencyCode;
 
   //***************************************************************************
@@ -528,7 +528,7 @@ void FirstDecrementCoeffCalculation( void) {
 
   //Импульс WrCnt
   GP4DAT ^= 1 << (16 + 2);
-  pause( 1);
+  //pause( 1);
   GP4DAT ^= 1 << (16 + 2);
 
   //2014-09-17 Выяснилось что функция CnvSt отдана Альтере и я дёргал ногой впустую... комментим
@@ -540,7 +540,7 @@ void FirstDecrementCoeffCalculation( void) {
   // Получение приращения угла:
   //получение старшего байта приращения угла
   GP1SET |= 1 << (16 + 3);  //rdhbc set
-  pause( 1);
+  //pause( 1);
 
   hb = (( GP1DAT & BIT_5) >> 5) +
        ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -555,7 +555,7 @@ void FirstDecrementCoeffCalculation( void) {
 
   //получение младшего байта приращения угла
   GP1SET |= 1 << (16 + 4);  //rdlbc set
-  pause( 1);
+  //pause( 1);
 
   lb = (( GP1DAT & BIT_5) >> 5) +
        ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -611,7 +611,7 @@ void FirstDecrementCoeffCalculation( void) {
 
     //Импульс WrCnt
     GP4DAT ^= 1 << (16 + 2);
-    pause( 1);
+    //pause( 1);
     GP4DAT ^= 1 << (16 + 2);
 
     //2014-09-17 Выяснилось что функция CnvSt отдана Альтере и я дёргал ногой впустую... комментим
@@ -624,7 +624,7 @@ void FirstDecrementCoeffCalculation( void) {
 
     //получение старшего байта приращения угла
     GP1SET |= 1 << (16 + 3);  //rdhbc set
-    pause( 1);
+    //pause( 1);
 
     hb = (( GP1DAT & BIT_5) >> 5) +
          ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -640,7 +640,7 @@ void FirstDecrementCoeffCalculation( void) {
 
     //получение младшего байта приращения угла
     GP1SET |= 1 << (16 + 4);  //rdlbc set
-    pause( 1);
+    //pause( 1);
 
     lb = (( GP1DAT & BIT_5) >> 5) +
          ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -795,7 +795,6 @@ void main() {
 
   char bSAFake = 0;
   int prt2val;
-  int n3kvApplyStart = 0, n3kvApplyEnd = 0;
 
   double db_dN1, db_dN2, dbU1, dbU2;
   float Coeff;
@@ -811,6 +810,8 @@ void main() {
 
   //int n;
   int t2val_old;      //2014-08-27 - enabling external oscillator
+
+  long lTacts = 0;
 
   bCalibProcessState = 0;    //0 - no calibration
                              //1 - processing min_t_point 1st thermo
@@ -917,7 +918,7 @@ void main() {
 
 #ifdef DEBUG
   printf("DBG MODE\n");
-  printf("T39-SLG. (C) SLC Alcor Laboratories, 2015.\n");
+  printf("T39-SLG. (C) SLC Alcor Laboratories, 2016.\n");
   printf("Software version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MIDDLE, VERSION_MINOR);
 
   /*
@@ -977,8 +978,9 @@ void main() {
   printf("DBG: GPIO lines values configuration...\n");
 #endif
 
-  GP0DAT &= ~( 1 << (16 + 5));  //RP_P       (p0.5) = 0
-  GP0CLR = ( 1 << (16 + 5));   //дублёр
+  //начальное значение интегратора - выключен
+  GP0DAT |= 1 << (16 + 5);      //RP_P       (p0.5) = 1
+  GP0SET = 1 << (16 + 5);       //дублёр
 
   GP4DAT |= 1 << (16 + 0);      //ONHV       (p4.0) = 1
   GP4SET = 1 << (16 + 0);      //дублёр
@@ -1024,7 +1026,7 @@ void main() {
   // Конфигурация АЦП
   //**********************************************************************	
   ADCCON = 0x20;            // включаем АЦП
-  while (time >=0)	        // ждем указанное в datasheet время (5мксек) для полного включения АЦП
+  while (time >=0)          // ждем указанное в datasheet время (5мксек) для полного включения АЦП
     time--;
 
   ADCCON = 0x624;           // Конфигурируем АЦП:
@@ -1365,14 +1367,14 @@ void main() {
 
     //измеряем ток I1
     ADCCP = 0x02;       //ADC2 --> I1
-    pause(10);
+    //pause(10);
     ADCCON |= 0x80;
     while (!( ADCSTA & 0x01)){}     // ожидаем конца преобразования АЦП
     gl_ssh_current_1 = (ADCDAT >> 16);
 
     //измеряем ток I2
     ADCCP = 0x01;       //ADC1 --> I2
-    pause(10);
+    //pause(10);
     ADCCON |= 0x80;
     while (!( ADCSTA & 0x01)){}     // ожидаем конца преобразования АЦП
     gl_ssh_current_2 = (ADCDAT >> 16);
@@ -1382,52 +1384,65 @@ void main() {
         ( ( double) gl_ssh_current_2 / 4095. * 3. / 3.973 < ( double) flashParamI2min / 65535. * 0.75)) {*/
 
     #ifdef DEBUG
+      printf("DBG: try %d\n", nFiringTry);
       printf("DBG: I1: Measured: %.02f  Goal: %.02f\n", ( 2.5 - ( double) gl_ssh_current_1 / 4095. * 3.) / 2.5, ( double) flashParamI1min / 65535. * 0.75);
       printf("DBG: I2: Measured: %.02f  Goal: %.02f\n", ( 2.5 - ( double) gl_ssh_current_2 / 4095. * 3.) / 2.5, ( double) flashParamI2min / 65535. * 0.75);
     #endif
 
-    if( ( ( 2.5 - ( double) gl_ssh_current_1 / 4095. * 3.) / 2.5  < ( double) flashParamI1min / 65535. * 0.75)  ||
+    if( ( ( 2.5 - ( double) gl_ssh_current_1 / 4095. * 3.) / 2.5 < ( double) flashParamI1min / 65535. * 0.75)  ||
         ( ( 2.5 - ( double) gl_ssh_current_2 / 4095. * 3.) / 2.5 < ( double) flashParamI2min / 65535. * 0.75)) {
       //не зажглось
 
-      //засекаем начало применения 3kV
-      n3kvApplyStart = T2VAL;
+      if( nFiringTry < 25) {
+#ifdef DEBUG
+  printf( "DBG: Applying 3kV for 1 sec\n");
+#endif
 
-      //включаем усиленный поджиг
-      GP4DAT &= ~( 1 << (16 + 1));    //OFF3KV (p4.1) = 0
-      GP4CLR = ( 1 << ( 16 + 1));     //дублёр
+        if( nFiringTry > 0 && ( nFiringTry % 5) == 0) { //if( nFiringTry % 5) == 0)
+          //выключаем лазер
+          GP4DAT |= 1 << (16 + 0);        //ONHV       (p4.0) = 1
+          GP4SET = 1 << (16 + 0);         //дублёр
 
+          //пауза 1 сек
+          pause( 32786);
 
-      if( ( double) (( prt2val + T2LD - T2VAL) % T2LD) / 32768. > 15.0) {
-        //TimeOut поджига
+          //поджигаем лазер
+          GP4DAT &= ~( 1 << (16 + 0));    //ONHV   (p4.0) = 0
+          GP4CLR = ( 1 << ( 16 + 0));     //дублёр
+        }
 
-        #ifdef DEBUG
-          printf("DBG: Fireup TimeOut (15 sec)... FAILED\n");
-        #endif
+        //включаем усиленный поджиг
+        GP4DAT &= ~( 1 << (16 + 1));      //OFF3KV (p4.1) = 0
+        GP4CLR = ( 1 << ( 16 + 1));       //дублёр
 
-        //отключаем горение
-        GP4DAT |= ( 1 << ( 16 + 0));  //ONHV   (p4.0) = 1
-        GP4SET = ( 1 << ( 16 + 0));   //дублёр
+        //пауза 1 сек
+        pause( 32786);
 
-        //отключаем 3kV
-        GP4DAT |= ( 1 << ( 16 + 1));  //OFF3KV (p4.1) = 1
-        GP4SET = ( 1 << ( 16 + 1));   //дублёр
+        //выключаем усиленный поджиг
+        GP4DAT |= 1 << (16 + 1);          //OFF3KV     (p4.1) = 1
+        GP4SET = 1 << (16 + 1);           //дублёр
 
-        //засекаем конец применения 3kV
-        n3kvApplyEnd = T2VAL;
+        //увеличиваем число попыток
+        nFiringTry++;
 
-        deadloop_no_firing();         //FINISH
+        //пауза 0.5 сек
+        pause( 16384);
+      }
+      else {
+
+#ifdef DEBUG
+  printf( "DBG: fireup FAILS\n");
+#endif
+
+        //выключаем горение
+        GP4DAT |= 1 << (16 + 0);      //ONHV       (p4.0) = 1
+        GP4SET = 1 << (16 + 0);      //дублёр
+
+        deadloop_no_firing();         //FAIL.FINISH
       }
     }
     else {
       //SUCCESS! зажглось
-
-      //отключаем усиленный пожиг
-      GP4DAT |= ( 1 << ( 16 + 1));  //OFF3KV (p4.1) = 1
-      GP4SET = ( 1 << ( 16 + 1));   //дублёр
-
-      //засекаем конец применения 3kV
-      n3kvApplyEnd = T2VAL;
 
       #ifdef DEBUG
         printf("DBG: Laser fireup... successfully passed\n");
@@ -1437,6 +1452,7 @@ void main() {
     }
   }
 #endif
+
 
   //**********************************************************************
   // ПРОВЕРКА ТАКТОВОГО СИГНАЛА
@@ -1457,11 +1473,12 @@ void main() {
 
 #else
 
-
+  /*
   //сброс интеграторов в системе регулировки периметра
   GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
   pause( 327);                  //pause 10msec
   GP0DAT &= ~( 1 << (16 + 5));  //RP_P   (p0.5) = 0
+  */
 
   //**********************************************************************
   //ТАКТИРОВАНИЕ
@@ -1535,7 +1552,7 @@ void main() {
   // Запуск преобразования АЦП
   //**********************************************************************
   ADCCP = 0x01;
-  pause(10);
+  //pause(10);
   ADCCON |= 0x80;
 
 #ifdef DEBUG
@@ -1560,6 +1577,10 @@ void main() {
   while( (GP0DAT & 0x10));
 
 #endif
+
+  //включение интегратора системы регулировки периметра
+  GP0DAT &= ~( 1 << (16 + 5));  //RP_P       (p0.5) = 0
+  GP0CLR = ( 1 << (16 + 5));   //дублёр
 
   //поначалу блокируем выдачу данных программой (время готовности)
   gl_bOutData = 0;
@@ -1591,6 +1612,14 @@ void main() {
 #endif
 
   nT2RepeatBang = T2VAL;
+
+  //Software version
+  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + ( VERSION_MAJOR * 16 + VERSION_MIDDLE));
+
+  send_pack( 0, 26,   flashParamDeviceId & 0xFF);         //Device_Num.Byte1
+  send_pack( 0, 27, ( flashParamDeviceId & 0xFF00) >> 8); //Device_Num.Byte2
+
+  gl_sn_MeaningCounterRound = 100;
 
   while(1) {
 
@@ -1628,7 +1657,7 @@ void main() {
           //Импульс WrCnt
           //**********************************************************************
           GP4DAT ^= 1 << (16 + 2);
-          pause_T0( 20);
+          //pause_T0( 20);
           GP4DAT ^= 1 << (16 + 2);
           /*
           GP4SET |= 1 << (16 + 2);  //WrCnt set
@@ -1653,7 +1682,7 @@ void main() {
           //Импульс WrCnt
           //**********************************************************************
           GP4DAT ^= 1 << (16 + 2);
-          pause_T0( 20);
+          //pause_T0( 20);
           GP4DAT ^= 1 << (16 + 2);
           /*
           GP4SET |= 1 << (16 + 2);	//WrCnt set
@@ -1669,7 +1698,7 @@ void main() {
 
         //получение старшего байта приращения угла
         GP1SET |= 1 << (16 + 3);    //rdhbc set
-        pause_T0( 1);
+        //pause_T0( 1);
 
         hb = (( GP1DAT & BIT_5) >> 5) +
              ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -1684,7 +1713,7 @@ void main() {
 
         //получение младшего байта приращения угла
         GP1SET |= 1 << (16 + 4);    //rdlbc set
-        pause_T0( 20);
+        //pause_T0( 20);
 
         lb = (( GP1DAT & BIT_5) >> 5) +
              ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -1712,7 +1741,7 @@ void main() {
           //читаем
           GP1CLR |= 1 << (16 + 7);                                    //cs->0
 
-          pause_T0( 20);
+          //pause_T0( 20);
           //for( k=0; k<10; k++);                                      //выждать t4
           //pause( 1);
 
@@ -1725,7 +1754,7 @@ void main() {
             //GP2CLR |= 1 << (16 + 2);                                  //sclk->0
             GP2DAT &= ~( 1 << (16 + 2));                              //sclk->0
 
-            pause_T0( 20);
+            //pause_T0( 20);
             //for( k=0; k<5; k++);                                    //выждать t5
             //pause( 1);
 
@@ -1734,7 +1763,7 @@ void main() {
             //GP2SET |= 1 << (16 + 2);                                  //sclk->1
             GP2DAT |= 1 << (16 + 2);                                  //sclk->1
 
-            pause_T0( 20);
+            //pause_T0( 20);
             //for( k=0; k<5; k++);                                    //выждать t8
             //pause( 1);
           }
@@ -1801,8 +1830,10 @@ void main() {
           cRULAControl = ( RULA_MAX - RULA_MIN) / 2;
           delta = ( RULA_MAX - RULA_MIN) / 4;
           */
-          gl_un_RULAControl = 64;
-          nDelta = ( RULA_MAX - RULA_MIN) / 2;
+          
+          /*gl_un_RULAControl = 64;
+          nDelta = ( RULA_MAX - RULA_MIN) / 4;
+          */
 
           gl_sn_MeaningCounter = 0;
           gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
@@ -1854,7 +1885,7 @@ void main() {
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
         break;
 
-        case 8: //установить SA такт
+        case 8: //установить знаковый коэффициент dU
           flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
 
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
@@ -2068,6 +2099,7 @@ void main() {
     if( GP0DAT & 0x10) {  //на ноге P0.4 есть сигнал
 
       if( gl_b_SA_Processed == 0) { //если в этом SA цикле мы его еще не обрабатывали
+        lTacts++;
 
         //В тестовых целях делаем сигнал на линии P0.0
         GP0DAT |= 1 << ( 16);       //тестовая линия p0.0 set
@@ -2103,7 +2135,7 @@ void main() {
           //Импульс WrCnt
           //**********************************************************************
           GP4DAT ^= 1 << (16 + 2);
-          pause( 1);
+          //pause( 1);
           GP4DAT ^= 1 << (16 + 2);
           /*
           GP4SET |= 1 << (16 + 2);  //WrCnt set
@@ -2128,7 +2160,7 @@ void main() {
           //Импульс WrCnt
           //**********************************************************************
           GP4DAT ^= 1 << (16 + 2);
-          pause( 1);
+          //pause( 1);
           GP4DAT ^= 1 << (16 + 2);
           /*
           GP4SET |= 1 << (16 + 2);	//WrCnt set
@@ -2144,7 +2176,7 @@ void main() {
 
         //получение старшего байта приращения угла
         GP1SET |= 1 << (16 + 3);    //rdhbc set
-        pause( 1);
+        //pause( 1);
 
         hb = (( GP1DAT & BIT_5) >> 5) +
              ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -2159,7 +2191,7 @@ void main() {
 
         //получение младшего байта приращения угла
         GP1SET |= 1 << (16 + 4);    //rdlbc set
-        pause( 1);
+        //pause( 1);
 
         lb = (( GP1DAT & BIT_5) >> 5) +
              ((( GP2DAT & BIT_1) >> 1) << 1) +
@@ -2186,7 +2218,7 @@ void main() {
           //читаем
           GP1CLR |= 1 << (16 + 7);                                    //cs->0
 
-          for( k=0; k<10; k++);                                      //выждать t4
+          //for( k=0; k<10; k++);                                      //выждать t4
           //pause( 1);
 
           GP2SET |= 1 << (16 + 2);                                    //sclk->1
@@ -2197,7 +2229,7 @@ void main() {
             //GP2CLR |= 1 << (16 + 2);                                  //sclk->0
             GP2DAT &= ~( 1 << (16 + 2));                              //sclk->0
 
-            for( k=0; k<5; k++);                                    //выждать t5
+            //for( k=0; k<5; k++);                                    //выждать t5
             //pause( 1);
 
             val += ( ( ( GP1DAT & 0x40) >> 6) << (13-i));             //читаем бит
@@ -2223,10 +2255,10 @@ void main() {
         
         switch( ADCChannel) { //анализируем что мы оцифровывали и сохраняем в соответствующую переменную
 
-          case 0: gl_ssh_current_2 = (ADCDAT >> 16); break;     //I2
-          case 1: gl_ssh_current_1 = (ADCDAT >> 16); break;     //I1
+          case 0: gl_ssh_current_2 = (ADCDAT >> 16); break;                       //ADC1 = I2
+          case 1: gl_ssh_current_1 = (ADCDAT >> 16); break;                       //ADC2 = I1
 
-          case 2: //UINT (U_td3)
+          case 2:                                                                 //ADC3 = UINT (U_td3)
             gl_ssh_Utd3 = (ADCDAT >> 16);
             gl_ssh_Utd3_cal = gl_ssh_Utd3;
             if( bCalibrated)
@@ -2236,12 +2268,12 @@ void main() {
             gl_ssh_Utd3 = ( short) ( ( temp_t + 100.) / 200. * 65535.);
           break;
 
-          case 3:                                               //CntrPc
+          case 3:                                                                 //ADC4 = CntrPc
             gl_ssh_Perim_Voltage = (ADCDAT >> 16);
             //gl_ssh_Perim_Voltage = ( short) ( 4095 - ( int) gl_ssh_Perim_Voltage);
           break;
 
-          case 4: //UTD1
+          case 4:                                                                 //ADC5 = UTD1
             gl_ssh_Utd1 = (ADCDAT >> 16);
             gl_ssh_Utd1_cal = gl_ssh_Utd1;
             if( bCalibrated)
@@ -2251,7 +2283,7 @@ void main() {
             gl_ssh_Utd1 = ( short) ( ( temp_t + 100.) / 200. * 65535.);
           break;  //UTD1
 
-          case 5: //UTD2
+          case 5:                                                                 //ADC6 = UTD2
             gl_ssh_Utd2 = (ADCDAT >> 16);
             gl_ssh_Utd2_cal = gl_ssh_Utd2;
             if( bCalibrated)
@@ -2261,7 +2293,7 @@ void main() {
             gl_ssh_Utd2 = ( short) ( ( temp_t + 100.) / 200. * 65535.);
           break;  //UTD2
 
-          case 6: gl_ssh_ampl_angle = (ADCDAT >> 16); break; //AmplAng
+          case 6: gl_ssh_ampl_angle = (ADCDAT >> 16); break;                      //ADC7 = AmplAng
         }
 
         if( bCalibProcessState) {
@@ -2337,7 +2369,7 @@ void main() {
 
 
         ADCCP = 0x01 + ADCChannel;              //выставляем новый канал АЦП
-        pause(10);
+        //pause(10);
         ADCCON |= 0x80;                         //запуск нового преобразования (съем будет в следующем такте SA)
 
 
@@ -2345,7 +2377,7 @@ void main() {
         // Получение числа импульсов от альтеры
         //**********************************************************************
         GP3DAT |= 1 << (16 + 3);      //set RdN7N0 -> 1
-        pause( 1);
+        //pause( 1);
         gl_ush_MeanImpulses = (( GP1DAT & BIT_5) >> 5) +
              ((( GP2DAT & BIT_1) >> 1) << 1) +
              ((( GP0DAT & BIT_1) >> 1) << 2) +
@@ -2358,7 +2390,7 @@ void main() {
 
 
         GP2DAT |= 1 << (16 + 4);      //set RdN10N8 -> 1
-        pause( 1);
+        //pause( 1);
         gl_ush_MeanImpulses += 
              ((( GP1DAT & BIT_5) >> 5) << 8) +
              ((( GP2DAT & BIT_1) >> 1) << 9) +
@@ -2408,7 +2440,7 @@ void main() {
             case 25: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 25, flashParamPhaseShift);    break;	  //phase shift
 
             case 26: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 26,   flashParamDeviceId & 0xFF);            break;    //Device_Num.Byte1
-            case 27: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 27, ( flashParamDeviceId & 0xFF00) >> 8);    break;    //Device_Num.Byte1
+            case 27: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 27, ( flashParamDeviceId & 0xFF00) >> 8);    break;    //Device_Num.Byte2
 
             case 28: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 28, flashParamOrg[ 0]);        break;    //Organization.Byte1
             case 29: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 29, flashParamOrg[ 1]);        break;    //Organization.Byte2
@@ -2431,7 +2463,7 @@ void main() {
             case 45: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 45, flashParamDateMonth);    break;    //Date.Month
             case 46: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 46, flashParamDateDay);      break;    //Date.Day
 
-            case 47: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 47, (( n3kvApplyStart + T2LD - n3kvApplyEnd) % T2LD) );    break;    //HV apply duration
+            case 47: send_pack( ( 65536 + gl_ssh_angle_inc - gl_ssh_angle_inc_prev) % 65536, 47, /*(( n3kvApplyStart + T2LD - n3kvApplyEnd) % T2LD)*/ 0 );    break;    //HV apply duration
           }
         }
 
@@ -2485,114 +2517,103 @@ void main() {
           //ну тут остаётся только рабочий режим с 7 пачками
           nSentPacksCounter = ( nSentPacksCounter) % nSentPacksRound;
 
+
         //**********************************************************************
         //Стабилизация средней амплитуды частотной подставки (получение числа импульсов перенес выше перед отправкой данных)
         //**********************************************************************
         gl_sn_MeaningCounter = ( ++gl_sn_MeaningCounter) % gl_sn_MeaningCounterRound;
 
         //собственно сама подстройка напряжения RULA
-        if( !gl_sn_MeaningCounter) {
+        if( gl_sn_MeaningCounter == 0) {
 
           //от альтеры... сразу получаем амплитуду в виде числа импульсов
           dMeanImps = dMeaningSumm / ( double) gl_sn_MeaningCounterRound;
           dMeanImps = dMeanImps / 4.;
 
-          //от ДУСа.... переводим в вольты из рассчёта 4095=2,5В,
-          //потом рассчёт 2,2В=120"
-          //и делением на масштабный коэффициент 2,9 мы получаем число импульсов
-          //dMeanImps = dMeaningSumm / ( double) gl_sn_MeaningCounterRound / 4095. * 2.5 / 2.2 * 120. / 2.9;
+
+          if( dMeanImps > 5) {
+            //от ДУСа.... переводим в вольты из рассчёта 4095=2,5В,
+            //потом рассчёт 2,2В=120"
+            //и делением на масштабный коэффициент 2,9 мы получаем число импульсов
+            //dMeanImps = dMeaningSumm / ( double) gl_sn_MeaningCounterRound / 4095. * 2.5 / 2.2 * 120. / 2.9;
 
 
-          if( fabs( dMeanImps - ( double) flashParamAmplitudeCode) > 0.5) {
-            if( dMeanImps > flashParamAmplitudeCode) {
+            if( fabs( dMeanImps - ( double) flashParamAmplitudeCode) > 0.5) {
 
-              gl_un_RULAControl -= nDelta;
-
-              /*
-              if( nDelta >= gl_un_RULAControl) {
-                //delta = cRULAControl;
-                gl_un_RULAControl = gl_un_RULAControl / 2;
+              if( dMeanImps > flashParamAmplitudeCode) {
+                if( nDelta < gl_un_RULAControl)
+                  gl_un_RULAControl -= nDelta;
+                else
+                  gl_un_RULAControl = RULA_MIN;
               }
-              else
-                gl_un_RULAControl -= nDelta;
-              */
 
-            }
-            if( dMeanImps < flashParamAmplitudeCode) {
-
-              gl_un_RULAControl += nDelta;
-
-              /*
-              if( gl_un_RULAControl + nDelta > RULA_MAX) {
-                //delta = 255 - cRULAControl;
-                gl_un_RULAControl = ( RULA_MAX + gl_un_RULAControl) / 2;
-              }
-              else
+              if( dMeanImps < flashParamAmplitudeCode)
                 gl_un_RULAControl += nDelta;
-              */
-            }
-          }
 
-          if( gl_un_RULAControl > RULA_MAX) gl_un_RULAControl = RULA_MAX;
-          if( gl_un_RULAControl < RULA_MIN) gl_un_RULAControl = RULA_MIN;
+            }
+
+            if( gl_un_RULAControl > RULA_MAX) gl_un_RULAControl = RULA_MAX;
+            if( gl_un_RULAControl < RULA_MIN) gl_un_RULAControl = RULA_MIN;
+
+            //сокращение амплитуды "встряски" (если она еще > 1)
+            nDelta = ( int) ( ( double) nDelta / 1.5);
+            if( nDelta < 1) {
+              nDelta = 1;
+            }
+
+            /*
+            //повторная "встрясковая" подстройка после 7 секунд
+            if( nT2RepeatBang) {
+              if( ( T2LD + nT2RepeatBang - T2VAL) % T2LD >= 32768 * 7) {
+                /*
+                nDelta = ( RULA_MAX - RULA_MIN) / 4;
+                gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
+                */
+                /*
+                nT2RepeatBang = 0;
+              }
+            }
+            */
+
+            //включение выдачи данных после 2.5 секунд
+            if( nT2RepeatBang) {
+              if( ( T2LD + nT2RepeatBang - T2VAL) % T2LD >= 32768 * 1.8) {
+                gl_bOutData = 1;
+                nSentPacksCounter = 0;
+                nSentPacksRound = LONG_OUTPUT_PACK_LEN;
+              }
+            }
+
+            //рабочий режим (после подстройки амплитудой) тут мы подстраиваемся временем
+            //2014.10.09 - добавил что если большая разница - подстроим и приращением
+            if( nDelta == 1) {
+              if( abs( flashParamAmplitudeCode - dMeanImps) > 10.) { nDelta = nDelta = ( RULA_MAX - RULA_MIN) / 8; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 5.) { nDelta = ( RULA_MAX - RULA_MIN) / 16; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 1.) { nDelta = ( RULA_MAX - RULA_MIN) / 32; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.9) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.8) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_200;
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.7) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_300;
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.6) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_400;
+              else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.5) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_500;
+              else gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_STABLE;
+            }
+
+
+            DACConfiguration();
+
+
+            /*
+            //"встрясковая" подстройка (включение посреди рабочего режима)
+            if( gl_sn_MeaningCounterRound == MEANING_IMP_PERIOD_STABLE) {
+              if( abs( flashParamAmplitudeCode - dMeanImps) > 5) {
+                nDelta = ( RULA_MAX - RULA_MIN) / 4;
+                gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
+              }
+            }*/
+
+          }
 
           dMeaningSumm = 0.;
-
-          //сокращение амплитуды "встряски" (если она еще > 1)
-          nDelta = ( int) ( ( double) nDelta / 1.5);
-          if( nDelta < 1) {
-            nDelta = 1;
-          }
-
-          /*
-          //повторная "встрясковая" подстройка после 7 секунд
-          if( nT2RepeatBang) {
-            if( ( T2LD + nT2RepeatBang - T2VAL) % T2LD >= 32768 * 7) {
-              /*
-              nDelta = ( RULA_MAX - RULA_MIN) / 4;
-              gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-              */
-              /*
-              nT2RepeatBang = 0;
-            }
-          }
-          */
-
-          //включение выдачи данных после 2.5 секунд
-          if( nT2RepeatBang) {
-            if( ( T2LD + nT2RepeatBang - T2VAL) % T2LD >= 32768 * 1.8) {
-              gl_bOutData = 1;
-              nSentPacksCounter = 0;
-              nSentPacksRound = LONG_OUTPUT_PACK_LEN;
-            }
-          }
-
-          //рабочий режим (после подстройки амплитудой) тут мы подстраиваемся временем
-          //2014.10.09 - добавил что если большая разница - подстроим и приращением
-          if( nDelta == 1) {
-            if( abs( flashParamAmplitudeCode - dMeanImps) > 10.) { nDelta = nDelta = ( RULA_MAX - RULA_MIN) / 4; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 5.) { nDelta = ( RULA_MAX - RULA_MIN) / 8; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 1.) { nDelta = ( RULA_MAX - RULA_MIN) / 16; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.9) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.8) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_200;
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.7) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_300;
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.6) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_400;
-            else if( abs( flashParamAmplitudeCode - dMeanImps) > 0.5) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_500;
-            else gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_STABLE;
-          }
-
-          DACConfiguration();
-
-
-          /*
-          //"встрясковая" подстройка (включение посреди рабочего режима)
-          if( gl_sn_MeaningCounterRound == MEANING_IMP_PERIOD_STABLE) {
-            if( abs( flashParamAmplitudeCode - dMeanImps) > 5) {
-              nDelta = ( RULA_MAX - RULA_MIN) / 4;
-              gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-            }
-          }*/
-
 
         }
         else {
@@ -2601,16 +2622,15 @@ void main() {
         }
 
 
-
-
         //**********************************************************************
         //обработка флага сброса RP_P
         //**********************************************************************
         if( nRppTimer != 0) {
-          if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 327) {
-            //сброс интеграторов в системе регулировки периметра
+          if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768) {    //длительность RESETа тут (1s)
+            //включение интегратора в системе регулировки периметра
             GP0DAT &= ~( 1 << (16 + 5));  //RP_P   (p0.5) = 0
             nRppTimer = 0;
+            gl_b_PerimeterReset = 0;
           }
         }
 
@@ -2627,6 +2647,7 @@ void main() {
       //если линия сигнала SA в низком уровне - то как только она поднимется начнется новый необработанный такт
       gl_b_SA_Processed = 0;
 
+      /*
       //проверка тактирования
       ush_SA_check_time = ( T1LD + gl_ssh_prT1VAL - T1VAL) % T1LD;
 
@@ -2640,6 +2661,7 @@ void main() {
         deadloop_no_tact( ERROR_TACT_SIGNAL_LOST);
 
       }
+      */
     }
   }
 }
