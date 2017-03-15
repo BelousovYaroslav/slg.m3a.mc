@@ -70,7 +70,7 @@ char pos_in_in_buf = 0;                     //позиция записи в буфере входящих к
 
 
 signed short gl_ssh_SA_time = 0;        //вычисление периода такта.период SA/TA
-signed short gl_ssh_prT1VAL = 0x1000;   //вычисление периода такта.значение T1 в момент предыдущего такта SA/TA
+int gl_n_prT1VAL = 0x1000;              //вычисление периода такта.значение T1 в момент предыдущего такта SA/TA
 
 
 signed short gl_ssh_angle_inc = 0;      //приращение угла
@@ -127,23 +127,23 @@ int nT2RepeatBang;
 
 char gl_b_PerimeterReset = 0;
 
-char gl_b_SA_Processed = 0;	          //флаг окончания обработки сигнала SA
+char gl_b_SA_Processed = 0;           //флаг окончания обработки сигнала SA
 char gl_b_SyncMode = 0;               //флаг режима работы гироскопа:   0=синхр. 1=асинхр.
-char bAsyncDu = 0;                //флаг передачи времени SA или приращ. угла в асинхр. режиме: 0-передается SA 1-передается dU
+char bAsyncDu = 0;                    //флаг передачи времени SA или приращ. угла в асинхр. режиме: 0-передается SA 1-передается dU
 
-short nSentPacksCounter = 0;			              //счетчик посылок
+short nSentPacksCounter = 0;                    //счетчик посылок
 int nSentPacksRound = SHORT_OUTPUT_PACK_LEN;    //круг счетчика посылок
-char gl_c_OutPackCounter = 0;                    //выдаваемый наружу счётчик посылок
+char gl_c_OutPackCounter = 0;                   //выдаваемый наружу счётчик посылок
 
 
 
-int ADCChannel = 1;						//читаемый канал АЦП
-										//0 = ADC1 = 78 нога = UTD1
-										//1 = ADC2 = 79 нога = UTD2
-										//2 = ADC3 = 80 нога = I1
-										//3 = ADC4 =  1 нога = I2
-										//4 = ADC5 =  2 нога = CntrPC
-										//5 = ADC6 =  3 нога = AmplAng
+int ADCChannel = 1;           //читаемый канал АЦП
+                              //0 = ADC1 = 78 нога = UTD1
+                              //1 = ADC2 = 79 нога = UTD2
+                              //2 = ADC3 = 80 нога = I1
+                              //3 = ADC4 =  1 нога = I2
+                              //4 = ADC5 =  2 нога = CntrPC
+                              //5 = ADC6 =  3 нога = AmplAng
 
 #define BIT_0 1
 #define BIT_1 2
@@ -170,7 +170,12 @@ double TD3_K, TD3_B;
 //2014-08-27 - enabling external oscillator
 static int new_clock_locked = 0;
 
-char gl_bOutData = 0;
+char gl_bOutData = 0;         //флаг разрешения выдачи данных наружу
+
+//Система контроля просадок токов
+char gl_bManualLaserOff = 0;          //флаг что мы сами выключили ток лазера (командой). Флаг нужен чтобы исключить это событие в отслеживателе просадок тока.
+int gl_nLaserCurrentUnstableT2 = 0;   //последний момент времени когда была просадка (отслеживается, и если за последние 5 сек просадок не было - сбрасывается)
+int gl_nLaserCurrentUnstableCnt = 0;  //счётчик просадок в течении последних 5 сек
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //обработчик прерываний
@@ -247,10 +252,10 @@ void pause( int n) {
 #endif
 */
 
-  prval = T1VAL;
-  chk = (( T1LD + prval - T1VAL) % T1LD);
+  prval = T2VAL;
+  chk = (( T2LD + prval - T2VAL) % T2LD);
   while( chk < n)
-    chk = (( T1LD + prval - T1VAL) % T1LD);
+    chk = (( T2LD + prval - T2VAL) % T2LD);
 /*
 #ifdef DEBUG
   printf("pause() out\n");
@@ -783,7 +788,7 @@ void ThermoCalibrationCalculation( void)
 
 
 void main() {
-  unsigned short ush_SA_check_time;
+  //unsigned short ush_SA_check_time;
 
   short in_param_temp;
   int nRppTimer = 0;
@@ -821,7 +826,7 @@ void main() {
   char cCheckSumm = 0;
 
   //int n;
-  int t2val_old;      //2014-08-27 - enabling external oscillator
+  int nT2VALold;      //2014-08-27 - enabling external oscillator
 
   long long llTacts = 0;
 
@@ -1089,8 +1094,16 @@ void main() {
   //**********************************************************************
   // Конфигурация Timer1
   //**********************************************************************
-  T1CON = 0x2c0;
-  T1LD = 0x100000;
+  T1CON = 0x0C4;
+  //0x0C4 = 0000 1100 0100
+  // 000 0   1 1 00   0100
+  // |   |   | | |    |------ SourceClock/16
+  // |   |   | | |----------- Binary
+  // |   |   | -------------- Periodic
+  // |   |   ---------------- Enable
+  // |   -------------------- Count down
+  // ------------------------ CoreClock (41.78 Mhz)
+  T1LD = 0xFFFFFFFF;
 
   //**********************************************************************
   // Конфигурация внешнего осциллятора
@@ -1122,11 +1135,11 @@ void main() {
 
 
   /* configuring Timer2 for Wake-up */
-  t2val_old = T2VAL;
+  nT2VALold = T2VAL;
   T2LD = 0x050;   // 5; 5 clocks @32.768kHz = 152ms
   T2CON = 0x480;  // Enable Timer2;
 
-  //while ((T2VAL == t2val_old) || (T2VAL > 3)); // ensures timer is started...
+  //while ((T2VAL == nT2VALold) || (T2VAL > 3)); // ensures timer is started...
 
   /* enabling Timer2 interrupt */
   IRQEN = 0x10;   // enable TIMER2 Wakeup IRQ
@@ -1146,7 +1159,8 @@ void main() {
   while (!new_clock_locked);
 
   /* disabling Timer2 interrupt */
-  IRQEN &= ~(0x10);   // disable TIMER2 Wakeup IRQ
+  //IRQEN &= ~(0x10);   //WRONG-WAY disable TIMER2 Wakeup IRQ
+  IRQCLR |= 0x10;     //RIGHT-WAY disable TIMER2 Wakeup IRQ
 
 /*
 #ifdef DEBUG
@@ -1158,7 +1172,7 @@ void main() {
   // Конфигурация Timer2
   //**********************************************************************
   T2CON = 0x0C0;
-  T2LD = 0x100000;
+  T2LD = 0x0FFFFFFF;
 
 #ifdef DEBUG
   printf("DBG: FlashEE configuration\n");
@@ -1599,7 +1613,12 @@ void main() {
   GP0CLR = ( 1 << (16 + 5));   //дублёр
 
   //поначалу блокируем выдачу данных программой (время готовности)
+#ifdef DEBUG
+  //НО НЕ В DEBUG'e!!!!!
+  gl_bOutData = 1;
+#else
   gl_bOutData = 0;
+#endif
 
   //**********************************************************************
   // Основной цикл работы программы
@@ -1808,8 +1827,8 @@ void main() {
         //dU
         sh_dU = gl_ssh_angle_hanger - gl_ssh_angle_hanger_prev;
         //dT
-        gl_ssh_SA_time = ( T1LD + gl_ssh_prT1VAL - T1VAL) % T1LD;
-        gl_ssh_prT1VAL = T1VAL;
+        gl_ssh_SA_time = ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+        gl_n_prT1VAL = T1VAL;
         */
 
         //счётчик
@@ -1884,7 +1903,7 @@ void main() {
           DACConfiguration();
           GP0DAT |= ( 1 << (16 + 5));	  //RP_P   (p0.5) = 1
 
-          nRppTimer = T1VAL;
+          nRppTimer = T2VAL;
           gl_b_PerimeterReset = 1;
 
           nSentPacksRound = LONG_OUTPUT_PACK_LEN;
@@ -1993,8 +2012,9 @@ void main() {
         break;
 
         case 15:    //команда выключения лазера
-          GP4DAT |= 1 << (16 + 0);	    //ONHV       (p4.0) = 1
-          GP4DAT |= 1 << (16 + 1);	    //OFF3KV     (p4.1) = 1
+          GP4DAT |= 1 << (16 + 0);      //ONHV       (p4.0) = 1
+          GP4DAT |= 1 << (16 + 1);      //OFF3KV     (p4.1) = 1
+          gl_bManualLaserOff = 1;
         break;
 
         case 16:    //команда выключение интегратора
@@ -2138,13 +2158,13 @@ void main() {
       if( gl_b_SA_Processed == 0) { //если в этом SA цикле мы его еще не обрабатывали
         llTacts++;
 
+        gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+        gl_n_prT1VAL = T1VAL;
+
         //В тестовых целях делаем сигнал на линии P0.0
         GP0DAT |= 1 << ( 16);       //тестовая линия p0.0 set
         /*for( i=0; i<100; i++);
         GP0DAT &= ~( 1 << ( 16));   //тестовая линия p0.0 clear*/
-
-        gl_ssh_SA_time = ( T1LD + gl_ssh_prT1VAL - T1VAL) % T1LD;
-        gl_ssh_prT1VAL = T1VAL;
 
         //Руководство к действиям:
         //сразу же по пришествию сигнала SA:
@@ -2529,22 +2549,70 @@ void main() {
         gl_ssh_angle_inc_prev = gl_ssh_angle_inc;
 
         // ************************************************************************************
+        // 2016-12-14
+        // Слежение за разрядными токами
+        // ************************************************************************************
+        if( gl_bManualLaserOff == 0 && nSentPacksCounter == 2) {
+          //если мы не выключили слежение
+
+          //отслеживаем 5 сек с последнего момента просадки токов
+          if( gl_nLaserCurrentUnstableT2 != 0) {
+            if( ( gl_nLaserCurrentUnstableT2 + T2LD - T2VAL) >= 163840) { //5sec (*32kHz = 163840)
+              //5сек - просадок не было. сбрасываем флаг.
+              gl_nLaserCurrentUnstableT2 = 0;
+              gl_nLaserCurrentUnstableCnt = 0;
+            }
+          }
+
+          //чтобы токи лежали в диапазоне 0.4mA +-10% = [0.36;0.44]
+          //отсчёты АЦП должны быть:
+          //1912 --> 0.439844 mA
+          //2184 --> 0.360156 mA
+
+          //чтобы токи лежали в диапазоне 0.5mA +-10% = [0.45;0.55]
+          //отсчёты АЦП должны быть:
+          //1537 --> 0.549707 mA
+          //1877 --> 0.450098 mA
+
+          if( gl_ssh_current_1 >= 1537 && gl_ssh_current_1 <= 1877 &&
+              gl_ssh_current_2 >= 1537 && gl_ssh_current_2 <= 1877) {
+              //с токами всё в порядке
+          }
+          else {
+            //отловили ситуацию когда просел ток
+            gl_nLaserCurrentUnstableT2 = T2VAL; //запоминаем время (по прошествии 5 сек от него мы сбросим счётчик ошибок)
+            gl_nLaserCurrentUnstableCnt++;      //увеличиваем счётчик ошибок
+
+            if( gl_nLaserCurrentUnstableCnt >= 5) {
+              //мы набрали 5 или более "выпадов" за 5 сек - выключаем ток
+
+              GP4DAT |= 1 << (16 + 0);      //ONHV       (p4.0) = 1
+              GP4SET = 1 << (16 + 0);      //дублёр
+              deadloop_current_unstable();
+            }
+          }
+        }
+
+        // ************************************************************************************
         // 2010-04-22
+        // 2017-01-17 introducing moving average
         //автоматическая перестройка периметра
         // ************************************************************************************
-        if( nSentPacksCounter == 4) {
+        if( nSentPacksCounter == 5) {
           gl_shVprc[ gl_nVrpcCounter] = gl_ssh_Perim_Voltage;
           gl_nVrpcCounter = (++gl_nVrpcCounter) % VPRC_SLIDING_ROUND;
 
-          dbl_V_piezo = ( ( CalcSlidingAverage() / 4095. * 3.) - 2.048) * 100.;
+          if( gl_nVrpcCounter == 0) {
+            dbl_V_piezo = ( ( CalcSlidingAverage() / 4095. * 3.) - 2.048) * 100.;
 
-          if( fabs( dbl_V_piezo) > 80.) {
-            flashParamStartMode = 125;
-            DACConfiguration();
-            GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
-            nRppTimer = T1VAL;
-            nSentPacksRound = LONG_OUTPUT_PACK_LEN;
-            gl_b_PerimeterReset = 1;
+            if( fabs( dbl_V_piezo) > 90.) {
+              flashParamStartMode = 125;
+              DACConfiguration();
+              GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
+              nRppTimer = T2VAL;
+              nSentPacksRound = LONG_OUTPUT_PACK_LEN;
+              gl_b_PerimeterReset = 1;
+            }
           }
         }
 
@@ -2669,18 +2737,18 @@ void main() {
         //**********************************************************************
         if( nRppTimer != 0) {
           if( gl_b_PerimeterReset == 1) {
-            if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768 * 0.1) {    //длительность верхней части RESET-сигнала 0.100 s
+            if( (( T2LD + nRppTimer - T2VAL) % T2LD) > 32768 * 0.1) {    //длительность верхней части RESET-сигнала 0.100 s
               //прошла первая часть (0.1 сек после выключения интегратора) ==> включаем интегратор, и засекаем время ещё раз
               //включение интегратора в системе регулировки периметра
               GP0DAT &= ~( 1 << (16 + 5));  //RP_P   (p0.5) = 0
 
               //засекаем повторно таймер
-              nRppTimer = T1VAL;
+              nRppTimer = T2VAL;
               gl_b_PerimeterReset = 2;
             }
           }
           else if( gl_b_PerimeterReset == 2) {
-            if( (( T1LD + nRppTimer - T1VAL) % T1LD) > 32768 * 0.1) {    //длительность нижней части RESET-сигнала 0.100 s
+            if( (( T2LD + nRppTimer - T2VAL) % T2LD) > 32768 * 0.1) {    //длительность нижней части RESET-сигнала 0.100 s
               //прошла вторая часть (0.1 сек после включения интегратора) ==> говорим что интегратор настроился, и данные достоверны, и таймер нам больше не нужен
               //сбрасываем флаг достоверности данных в состоние "достоверно"
               gl_b_PerimeterReset = 0;
@@ -2715,7 +2783,7 @@ void main() {
 
       /*
       //проверка тактирования
-      ush_SA_check_time = ( T1LD + gl_ssh_prT1VAL - T1VAL) % T1LD;
+      ush_SA_check_time = ( T2LD + gl_n_prT2VAL - T2VAL) % T2LD;
 
       //2 sec = 32768 * 2.0 = 65536
       if( ush_SA_check_time > 65536) {
