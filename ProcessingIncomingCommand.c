@@ -12,8 +12,12 @@ extern char input_buffer[];
 
 extern char gl_c_EmergencyCode;         //Device error code
 
-extern int gl_sn_MeaningCounter;        //Amplitude control module: counter of measured values
-extern int gl_sn_MeaningCounterRound;   //Amplitude control module: round of measured values
+extern int gl_snMeaningCounter;         //Amplitude control module: counter of measured values
+extern int gl_snMeaningCounterRound;    //Amplitude control module: round of measured values
+extern int gl_snMeaningShift;           //Amplitude control module: bits for shift to get mean
+extern long gl_lnMeaningSumm;           //Amplitude control module: summ of amplitudes
+extern long gl_lnMeanImps;              //Amplitude control module: mean (it's calculated shifted by 4 i.e. multiplied by 16)
+extern int  gl_nActiveRegulationT2;     //Amplitude control module: amplitude active regulation T2 intersection
 
 extern short gl_nSentPackIndex;         //Analogue Parameter Index (what are we sending now)
 
@@ -28,14 +32,13 @@ extern char bCalibrated;
 extern unsigned int gl_un_RULAControl;
 extern unsigned int nDelta;
 
-extern int gl_nRppTimer;
 
+extern int gl_nRppTimer;
 extern char gl_b_PerimeterReset;
 
-extern double gl_dMeaningSumm;
 extern char gl_bAsyncDu;
 
-extern double gl_dMeanImps;
+
 
 //page 1
 extern unsigned short flashParamAmplitudeCode;     //Hanger Vibration Amplitude set
@@ -130,22 +133,35 @@ void processIncomingCommand( void) {
             nDelta = ( RULA_MAX - RULA_MIN) / 2;
             */
 
-            gl_sn_MeaningCounter = 0;
-            gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-            gl_dMeaningSumm = 0.;
-            gl_dMeanImps = 0.;
+            gl_snMeaningCounter = 0;
+            gl_snMeaningCounterRound = 128;
+            gl_snMeaningShift = 7;
+            gl_lnMeaningSumm = 0;
+            gl_lnMeanImps = 0;
+
+            //включаем флаг активной регулировки амплитуды (перенастройка амплитуды)
+            gl_nActiveRegulationT2 = T2VAL;
+            if( gl_nActiveRegulationT2 == 0) gl_nActiveRegulationT2 = 1;
           break;
 
           case TACT_CODE:   //Set CodeTact
             flashParamTactCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             configure_hanger();
             gl_nSentPackIndex = TACT_CODE;
+
+            //включаем флаг активной регулировки амплитуды (перенастройка амплитуды)
+            gl_nActiveRegulationT2 = T2VAL;
+            if( gl_nActiveRegulationT2 == 0) gl_nActiveRegulationT2 = 1;
           break;
 
           case M_COEFF: //Set NoiseCoefficient M
             flashParamMCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             DACConfiguration();
             gl_nSentPackIndex = M_COEFF;
+
+            //включаем флаг активной регулировки амплитуды (перенастройка амплитуды)
+            gl_nActiveRegulationT2 = T2VAL;
+            if( gl_nActiveRegulationT2 == 0) gl_nActiveRegulationT2 = 1;
           break;
 
           case STARTMODE: //Set StartMode

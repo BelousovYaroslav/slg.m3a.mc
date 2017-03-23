@@ -104,12 +104,14 @@ unsigned int gl_un_RULAControl = 3276;      //3276 = 2.000 V
 unsigned int nDelta = ( RULA_MAX - RULA_MIN) / 4;
 
 //Система стабилизации амплитуды
-int gl_sn_MeaningCounter = 0;
-int gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-double gl_dMeaningSumm = 0.;
-double gl_dMeanImps = 0.;
+int gl_snMeaningCounter = 0;              //счётчик средних
+int gl_snMeaningCounterRound = 128;       //статистика среднего
+int gl_snMeaningShift = 7;                //степень - насколько сдвигать сумму (log2 от gl_snMeaningCounterRound)
+long gl_lnMeaningSumm = 0;                //сумма амплитуд
+long gl_lnMeanImps = 0;                   //средняя амплитуда (в импульсах интерф. картинки)
+int gl_nActiveRegulationT2 = 0;           //отсечка таймера для сброса флага активной регулировки амплитуды, он же флаг включенного состояния
 
-//засечка таймера для события "через X сек после закуска"
+//засечка таймера для события "через X сек после запуска"
 int gl_nT2StartDataOut;
 
 //засечка таймера для события окончания сигнала сброса периметра
@@ -967,6 +969,24 @@ void InitBaudRate1000000() {
   /****************************************************************************************** */
 }
 
+void SimpleTest() {
+  unsigned short sh1 = 500;
+  long l1;
+  signed int i1 = 1000;
+  float dblResult;
+
+  dblResult = (( float) i1) * (( float) sh1) / 65535.;
+
+  dblResult = (( float) i1);
+  dblResult *= (( float) sh1);
+  dblResult /= 65535.;
+
+  l1 = ( long ) sh1 * (long) i1;
+  l1 = l1 >> 16;
+
+  while(1);
+}
+
 void main() {
   //unsigned short ush_SA_check_time;
   //unsigned char jchar = 0x30; 
@@ -1038,6 +1058,8 @@ void main() {
 
 
   COMCON0 = 0x007;      // Clearing DLAB
+
+  //SimpleTest();
 
 #ifdef DEBUG
   printf("DBG MODE\n");
@@ -1738,6 +1760,10 @@ void main() {
   gl_bOutData = 0;
 #endif
 
+  //включаем флаг активной регулировки амплитуды (старт прибора)
+  gl_nActiveRegulationT2 = T2VAL;
+  if( gl_nActiveRegulationT2 == 0) gl_nActiveRegulationT2 = 1;
+
   //**********************************************************************
   // Основной цикл работы программы
   //**********************************************************************
@@ -2172,9 +2198,16 @@ void main() {
             //****************************************************************************************************************************************************************
             //REGULAR PACK
             //****************************************************************************************************************************************************************
+            //case UTD1:            send_pack( ( short) gl_snMeaningCounterRound);           gl_nSentPackIndex = UTD2;           break; //UTD1
             case UTD1:            send_pack( gl_ssh_Utd1);           gl_nSentPackIndex = UTD2;           break; //UTD1
+
+            //case UTD2:            send_pack( ( short) gl_lnMeanImps);           gl_nSentPackIndex = UTD3;           break; //UTD2
             case UTD2:            send_pack( gl_ssh_Utd2);           gl_nSentPackIndex = UTD3;           break; //UTD2
+
+            //case UTD3:            send_pack( gl_un_RULAControl);           gl_nSentPackIndex = I1;             break; //UTD3
             case UTD3:            send_pack( gl_ssh_Utd3);           gl_nSentPackIndex = I1;             break; //UTD3
+
+
             case I1:              send_pack( gl_ssh_current_1);      gl_nSentPackIndex = I2;             break; //I1
             case I2:              send_pack( gl_ssh_current_2);      gl_nSentPackIndex = CNTRPC;         break; //I2
             case CNTRPC:          send_pack( gl_ssh_Perim_Voltage);  gl_nSentPackIndex = AMPLANG_ALTERA; break; //CntrPc
@@ -2317,6 +2350,16 @@ void main() {
     printf( "DBG: perimeter adjustment\n");
   #endif
 #endif
+
+        //включение выдачи данных после 1.8 секунд
+        if( gl_nT2StartDataOut) {
+          if( ( T2LD + gl_nT2StartDataOut - T2VAL) % T2LD >= 32768 * 1.8) {
+            gl_bOutData = 1;
+            gl_nSentPackIndex= UTD1;
+            gl_nT2StartDataOut = 0;
+          }
+        }
+
         // ************************************************************************************
         // 2010-04-22
         // 2017-02-05 - уход от вычислений с плавающей точкой
@@ -2355,52 +2398,56 @@ void main() {
           }
         }
 
+#ifdef DEBUG
+  #if DEBUG == 2
+          printf( "DBG: gl_ush_MeanImpulses=%d\n", gl_ush_MeanImpulses);
+          printf( "DBG: gl_snMeaningCounter=%d gl_lnMeaningSumm=%d\n", gl_snMeaningCounter, gl_lnMeaningSumm);
+          printf( "DBG: gl_lnMeanImps=%ld gl_snMeaningShift=%d\n", gl_lnMeanImps, gl_snMeaningShift);
+  #endif
+#endif
+
         //**********************************************************************
         //Стабилизация средней амплитуды частотной подставки (получение числа импульсов перенес выше перед отправкой данных)
         //**********************************************************************
-        gl_sn_MeaningCounter = ( ++gl_sn_MeaningCounter) % gl_sn_MeaningCounterRound;
+        gl_snMeaningCounter = ( ++gl_snMeaningCounter) % gl_snMeaningCounterRound;
 
         //собственно сама подстройка напряжения RULA
-        if( gl_sn_MeaningCounter == 0) {
+        if( gl_snMeaningCounter == 0) {
 
           //от альтеры... сразу получаем амплитуду в виде числа импульсов
-          gl_dMeanImps = gl_dMeaningSumm / ( double) gl_sn_MeaningCounterRound;
-          gl_dMeanImps = gl_dMeanImps / 4.;
+          gl_lnMeanImps = gl_lnMeaningSumm >> ( gl_snMeaningShift - 4);
+          gl_lnMeanImps = gl_lnMeanImps >> 2;
 
-
-          if( gl_dMeanImps > 5) {
+          if( gl_lnMeanImps > 90) {  //90 = 16 * 5
             //от ДУСа.... переводим в вольты из рассчёта 4095=2,5В, (2016.02.05 14:15, сомнения: 2.5 или 3?)
             //потом рассчёт 2,2В=120"
             //и делением на масштабный коэффициент 2,9 мы получаем число импульсов
-            //gl_dMeanImps = gl_dMeaningSumm / ( double) gl_sn_MeaningCounterRound / 4095. * 2.5 / 2.2 * 120. / 2.9;
+            //gl_dMeanImps = gl_dMeaningSumm / ( double) gl_snMeaningCounterRound / 4095. * 2.5 / 2.2 * 120. / 2.9;
 
+            if( abs( gl_lnMeanImps - ( flashParamAmplitudeCode << 4)) > 1) {    //то есть амплитуду не трогаем если средняя не дальше 1/16 от заданной
+              if( gl_lnMeanImps > ( flashParamAmplitudeCode << 4)) {
 
-            if( fabs( gl_dMeanImps - ( double) flashParamAmplitudeCode) > 0.5) {
-              if( gl_dMeanImps > flashParamAmplitudeCode) {
+                //gl_un_RULAControl -= nDelta;
 
-                gl_un_RULAControl -= nDelta;
-
-                /*
                 if( nDelta >= gl_un_RULAControl) {
                   //delta = cRULAControl;
                   gl_un_RULAControl = gl_un_RULAControl / 2;
                 }
                 else
                   gl_un_RULAControl -= nDelta;
-                */
 
               }
-              if( gl_dMeanImps < flashParamAmplitudeCode) {
-                gl_un_RULAControl += nDelta;
+              if( gl_lnMeanImps < ( flashParamAmplitudeCode << 4)) {
 
-                /*
+                //gl_un_RULAControl += nDelta;
+
                 if( gl_un_RULAControl + nDelta > RULA_MAX) {
                   //delta = 255 - cRULAControl;
                   gl_un_RULAControl = ( RULA_MAX + gl_un_RULAControl) / 2;
                 }
                 else
                   gl_un_RULAControl += nDelta;
-                */
+
               }
             }
 
@@ -2408,7 +2455,7 @@ void main() {
             if( gl_un_RULAControl < RULA_MIN) gl_un_RULAControl = RULA_MIN;
 
             //сокращение амплитуды "встряски" (если она еще > 1)
-            nDelta = ( int) ( ( double) nDelta / 1.5);
+            nDelta = nDelta >> 1;
             if( nDelta < 1) {
               nDelta = 1;
             }
@@ -2419,7 +2466,7 @@ void main() {
               if( ( T2LD + gl_nT2StartDataOut - T2VAL) % T2LD >= 32768 * 7) {
                 /*
                 nDelta = ( RULA_MAX - RULA_MIN) / 4;
-                gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
+                gl_snMeaningCounterRound = MEANING_IMP_PERIOD_100;
                 */
                 /*
                 gl_nT2StartDataOut = 0;
@@ -2427,27 +2474,35 @@ void main() {
             }
             */
 
-            //включение выдачи данных после 1.8 секунд
-            if( gl_nT2StartDataOut) {
-              if( ( T2LD + gl_nT2StartDataOut - T2VAL) % T2LD >= 32768 * 1.8) {
-                gl_bOutData = 1;
-                gl_nSentPackIndex= UTD1;
-                gl_nT2StartDataOut = 0;
-              }
-            }
+            
 
             //рабочий режим (после подстройки амплитудой) тут мы подстраиваемся временем
             //2014.10.09 - добавил что если большая разница - подстроим и приращением
             if( nDelta == 1) {
-              if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 10.)     { nDelta = ( RULA_MAX - RULA_MIN) / 8; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 5.) { nDelta = ( RULA_MAX - RULA_MIN) / 16; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 1.) { nDelta = ( RULA_MAX - RULA_MIN) / 32; gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100; }
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 0.9) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 0.8) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_200;
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 0.7) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_300;
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 0.6) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_400;
-              else if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 0.5) gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_500;
-              else gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_STABLE;
+              if( gl_nActiveRegulationT2 != 0) {
+                //активная регулировка амплитуды
+                if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 50; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 25; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 12; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) { nDelta = 6;  gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) { nDelta = 3;  gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {              gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else                                                                 {              gl_snMeaningCounterRound = 1024; gl_snMeaningShift = 10; }
+              }
+              else {
+                //регулировка амплитуды в процессе работы прибора
+                if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 8; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 4; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 2; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else                                                                 {             gl_snMeaningCounterRound = 1024; gl_snMeaningShift = 10; }
+              }
             }
 
 
@@ -2456,24 +2511,31 @@ void main() {
 
             /*
             //"встрясковая" подстройка (включение посреди рабочего режима)
-            if( gl_sn_MeaningCounterRound == MEANING_IMP_PERIOD_STABLE) {
+            if( gl_snMeaningCounterRound == MEANING_IMP_PERIOD_STABLE) {
               if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 5) {
                 nDelta = ( RULA_MAX - RULA_MIN) / 4;
-                gl_sn_MeaningCounterRound = MEANING_IMP_PERIOD_100;
+                gl_snMeaningCounterRound = MEANING_IMP_PERIOD_100;
               }
             }*/
 
           }
-          gl_dMeaningSumm = 0.;
+
+          gl_lnMeaningSumm = 0;
 
         }
         else {
-          gl_dMeaningSumm += gl_ush_MeanImpulses;    //от альтеры
+          gl_lnMeaningSumm += gl_ush_MeanImpulses;    //от альтеры
           //gl_dMeaningSumm += gl_ssh_ampl_angle;    //от ДУСа
         }
 
-        
-
+        //**********************************************************************
+        //обработка сброса флага активной регулировки амплитуды
+        //**********************************************************************
+        if( gl_nActiveRegulationT2 != 0) {
+          if( (( T2LD + gl_nActiveRegulationT2 - T2VAL) % T2LD) > 32768. * 10.0) {    //длительность фазы активной регулировки амплитуды 10 сек
+            gl_nActiveRegulationT2 = 0;
+          }
+        }
 
         //**********************************************************************
         //обработка флага сброса RP_P

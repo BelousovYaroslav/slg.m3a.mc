@@ -8,13 +8,6 @@
 #define RULA_MAX 4090
 #define RULA_MIN 25
 
-#define MEANING_IMP_PERIOD_100 100
-#define MEANING_IMP_PERIOD_200 200
-#define MEANING_IMP_PERIOD_300 300
-#define MEANING_IMP_PERIOD_400 400
-#define MEANING_IMP_PERIOD_500 500
-#define MEANING_IMP_PERIOD_STABLE 1000
-
 void load_params( void);                        //загрузить параметры из флэш-памяти в переменные
 void load_params_p1( void);
 void load_params_p2( void);

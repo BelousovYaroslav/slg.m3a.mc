@@ -46,7 +46,7 @@ Options 1,0,0  // Target 'Target 1'
  OrgReg (ÿADI\)
  TgStat=16
  OutDir (.\)
- OutName (t39_slg_mc_324)
+ OutName (t39_slg_mc_325)
  GenApp=1
  GenLib=0
  GenHex=1
