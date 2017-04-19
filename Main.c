@@ -1390,14 +1390,14 @@ void main() {
 
     //измеряем ток I1
     ADCCP = 0x02;       //ADC2 --> I1
-    //pause(10);
+    pause(1);
     ADCCON |= 0x80;
     while (!( ADCSTA & 0x01)){}     // ожидаем конца преобразования АЦП
     gl_ssh_current_1 = (ADCDAT >> 16);
 
     //измеряем ток I2
     ADCCP = 0x01;       //ADC1 --> I2
-    //pause(10);
+    pause(1);
     ADCCON |= 0x80;
     while (!( ADCSTA & 0x01)){}     // ожидаем конца преобразования АЦП
     gl_ssh_current_2 = (ADCDAT >> 16);
