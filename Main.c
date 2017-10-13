@@ -26,11 +26,11 @@ double gl_dbl_Omega;
 //ПАРАМЕТРЫ ХРАНИМЫЕ ВО ФЛЭШ-ПАМЯТИ
 //********************
 //page 1
-unsigned short flashParamAmplitudeCode = 90;    //амплитуда колебания виброподвеса
-unsigned short flashParamTactCode = 0;          //код такта
-unsigned short flashParamMCoeff = 4;            //коэффициент ошумления
-unsigned short flashParamStartMode = 5;         //начальная мода
-unsigned short flashParamDecCoeff = 0;          //коэффициент вычета
+unsigned short gl_ush_flashParamAmplitudeCode = 90;    //амплитуда колебания виброподвеса
+unsigned short gl_ush_flashParamTactCode = 0;          //код такта
+unsigned short gl_ush_flashParamMCoeff = 4;            //коэффициент ошумления
+unsigned short gl_ush_flashParamStartMode = 5;         //начальная мода
+unsigned short gl_ush_flashParamDecCoeff = 0;          //коэффициент вычета
 unsigned short flashLockDev = 0;                //флаг блокировки устройства
 
 //page 2
@@ -272,7 +272,7 @@ void send_pack( short analog_param) {
   float f_dN;
   double dbl_dN;
 
-  float Coeff = (( float) flashParamDecCoeff) / 65535.;
+  float Coeff = (( float) gl_ush_flashParamDecCoeff) / 65535.;
 
   signed short ssh_dN, ssh_dU;
   signed int n_dN, n_dU;
@@ -485,13 +485,13 @@ void configure_hanger( void) {
 
   //1. Код такта подставки
   //Выставка TactNoise0 (младший бит параметра "код такта подставки")
-  if( ( flashParamTactCode & 0x01))  //Set TactNoise0 to TactCode parameter bit0
+  if( ( gl_ush_flashParamTactCode & 0x01))  //Set TactNoise0 to TactCode parameter bit0
     GP3DAT |= ( 1 << (16 + 0));
   else
     GP3DAT &= ~( 1 << (16 + 0));
 
   //Выставка TactNoise1 (старший бит параметра "код такта подставки")
-  if( ( flashParamTactCode & 0x02))  //Set TactNoise1 to TactCode parameter bit1
+  if( ( gl_ush_flashParamTactCode & 0x02))  //Set TactNoise1 to TactCode parameter bit1
     GP3DAT |= ( 1 << (16 + 1));
   else
     GP3DAT &= ~( 1 << (16 + 1));
@@ -508,10 +508,10 @@ void DACConfiguration( void) {
   // ЦАП 0
   DAC0DAT = (( int) ( 4095.0 * ( ( double) gl_un_RULAControl / ( double) RULA_MAX * 2.5 ) / 3.0)) << 16; //выставка на выходе ЦАП0 1,0 В
   // ЦАП 1 (мода)
-  DAC1DAT = (( int) ( 4095.0 * ( ( double) flashParamMCoeff / 250. * ( ( double) gl_un_RULAControl / ( double) RULA_MAX * 2.5 )) / 3.0)) << 16;  //(1.0) - это RULA в вольтах который на DAC0
+  DAC1DAT = (( int) ( 4095.0 * ( ( double) gl_ush_flashParamMCoeff / 250. * ( ( double) gl_un_RULAControl / ( double) RULA_MAX * 2.5 )) / 3.0)) << 16;  //(1.0) - это RULA в вольтах который на DAC0
   //DAC1DAT = (( int) ( 4095.0 * ( ( double) flashParamParam3 / 250. * 0.25) / 3.0)) << 16;  //(1.0) - это RULA в вольтах который на DAC0
   // ЦАП 2 (начальная мода)
-  DAC2DAT = (( int) ( 4095.0 * ( ( double) flashParamStartMode / 250. * 2.5) / 3.0)) << 16;
+  DAC2DAT = (( int) ( 4095.0 * ( ( double) gl_ush_flashParamStartMode / 250. * 2.5) / 3.0)) << 16;
 }
 
 void FirstDecrementCoeffCalculation( void) {
@@ -696,7 +696,7 @@ void FirstDecrementCoeffCalculation( void) {
   } while( gl_un_DecCoeffStatPoints < DEC_COEFF_FIRST_CALCULATION_N);
 
   //считаем собсно значение коэф. вычета
-  flashParamDecCoeff = ( short) ( gl_dbl_Nsumm / gl_dbl_Usumm * 65535.);
+  gl_ush_flashParamDecCoeff = ( short) ( gl_dbl_Nsumm / gl_dbl_Usumm * 65535.);
 
   gl_un_DecCoeffStatPoints = 0;
   gl_dbl_Nsumm = gl_dbl_Usumm = 0.;
@@ -1779,7 +1779,7 @@ void main() {
     FirstDecrementCoeffCalculation();
 
 #ifdef DEBUG
-  printf("VALUE=%.2f  ", flashParamDecCoeff / 65535.);
+  printf("VALUE=%.2f  ", gl_ush_flashParamDecCoeff / 65535.);
 #endif
 
 #ifdef DEBUG
@@ -2219,11 +2219,11 @@ void main() {
             // PARAMETERS BY REQUEST
             //****************************************************************************************************************************************************************
 
-            case AMPLITUDE:       send_pack( flashParamAmplitudeCode);  gl_nSentPackIndex = UTD1;        break; //Уставка амплитуды колебания
-            case TACT_CODE:       send_pack( flashParamTactCode);    gl_nSentPackIndex = UTD1;           break; //Уставка кода такта подставки
-            case M_COEFF:         send_pack( flashParamMCoeff);      gl_nSentPackIndex = UTD1;           break; //Уставка коэффициента ошумления
-            case STARTMODE:       send_pack( flashParamStartMode);   gl_nSentPackIndex = UTD1;           break; //Уставка начальной моды
-            case DECCOEFF:        send_pack( flashParamDecCoeff);    gl_nSentPackIndex = UTD1;           break; //Коэффициент вычета
+            case AMPLITUDE:       send_pack( gl_ush_flashParamAmplitudeCode);   gl_nSentPackIndex = UTD1;     break; //Уставка амплитуды колебания
+            case TACT_CODE:       send_pack( gl_ush_flashParamTactCode);        gl_nSentPackIndex = UTD1;     break; //Уставка кода такта подставки
+            case M_COEFF:         send_pack( gl_ush_flashParamMCoeff);          gl_nSentPackIndex = UTD1;     break; //Уставка коэффициента ошумления
+            case STARTMODE:       send_pack( gl_ush_flashParamStartMode);       gl_nSentPackIndex = UTD1;     break; //Уставка начальной моды
+            case DECCOEFF:        send_pack( gl_ush_flashParamDecCoeff);        gl_nSentPackIndex = UTD1;     break; //Коэффициент вычета
             case CONTROL_I1:      send_pack( flashParamI1min);       gl_nSentPackIndex = CONTROL_I2;     break; //flashParamI1min
             case CONTROL_I2:      send_pack( flashParamI2min);       gl_nSentPackIndex = CONTROL_AA;     break; //flashParamI2min
             case CONTROL_AA:      send_pack( flashParamAmplAngMin1); gl_nSentPackIndex = UTD1;           break; //flashParamAmplAngMin1
@@ -2282,14 +2282,14 @@ void main() {
           db_dN2 = ( double) gl_ssh_angle_inc;
           dbU1 = ( double) gl_ssh_angle_hanger_prev;
           dbU2 = ( double) gl_ssh_angle_hanger;
-          Coeff = (( float) flashParamDecCoeff) / 65535.;
+          Coeff = ( ( float) gl_ush_flashParamDecCoeff) / 65535.;
           gl_dbl_Omega =  ( db_dN2 - db_dN1) - ( dbU2 - dbU1) * Coeff * ( ( signed short) flashParamSignCoeff - 1);
           if( fabs( gl_dbl_Omega) < 5) {
             gl_dbl_Nsumm += fabs( ( double) gl_ssh_angle_inc - ( double) gl_ssh_angle_inc_prev);
             gl_dbl_Usumm += fabs( ( double) gl_ssh_angle_hanger - ( double) gl_ssh_angle_hanger_prev);
             gl_un_DecCoeffStatPoints++;
             if( !( gl_un_DecCoeffStatPoints % DEC_COEFF_CONTINUOUS_CALCULATION_N)) {
-              flashParamDecCoeff = ( short) ( gl_dbl_Nsumm / gl_dbl_Usumm * 65535.);
+              gl_ush_flashParamDecCoeff = ( short) ( gl_dbl_Nsumm / gl_dbl_Usumm * 65535.);
               gl_dbl_Nsumm = gl_dbl_Usumm = 0.;
               gl_un_DecCoeffStatPoints = 0;
               gl_nSentPackIndex = DECCOEFF;
@@ -2386,7 +2386,7 @@ void main() {
 
               if( nRpcSumm < 1565 || nRpcSumm > 4025) {
               
-                flashParamStartMode = 125;
+                gl_ush_flashParamStartMode = 125;
                 DACConfiguration();
                 GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
                 gl_nRppTimer = T2VAL;
@@ -2424,8 +2424,8 @@ void main() {
             //и делением на масштабный коэффициент 2,9 мы получаем число импульсов
             //gl_dMeanImps = gl_dMeaningSumm / ( double) gl_snMeaningCounterRound / 4095. * 2.5 / 2.2 * 120. / 2.9;
 
-            if( abs( gl_lnMeanImps - ( flashParamAmplitudeCode << 4)) > 1) {    //то есть амплитуду не трогаем если средняя не дальше 1/16 от заданной
-              if( gl_lnMeanImps > ( flashParamAmplitudeCode << 4)) {
+            if( abs( gl_lnMeanImps - ( gl_ush_flashParamAmplitudeCode << 4)) > 1) {    //то есть амплитуду не трогаем если средняя не дальше 1/16 от заданной
+              if( gl_lnMeanImps > ( gl_ush_flashParamAmplitudeCode << 4)) {
 
                 //gl_un_RULAControl -= nDelta;
 
@@ -2437,7 +2437,7 @@ void main() {
                   gl_un_RULAControl -= nDelta;
 
               }
-              if( gl_lnMeanImps < ( flashParamAmplitudeCode << 4)) {
+              if( gl_lnMeanImps < ( gl_ush_flashParamAmplitudeCode << 4)) {
 
                 //gl_un_RULAControl += nDelta;
 
@@ -2481,26 +2481,26 @@ void main() {
             if( nDelta == 1) {
               if( gl_nActiveRegulationT2 != 0) {
                 //активная регулировка амплитуды
-                if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 50; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 25; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 12; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) { nDelta = 6;  gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) { nDelta = 3;  gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {              gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 50; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 25; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 12; gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) { nDelta = 6;  gl_snMeaningCounterRound = 128;  gl_snMeaningShift = 7; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) { nDelta = 3;  gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {              gl_snMeaningCounterRound = 256;  gl_snMeaningShift = 8; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {              gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
                 else                                                                 {              gl_snMeaningCounterRound = 1024; gl_snMeaningShift = 10; }
               }
               else {
                 //регулировка амплитуды в процессе работы прибора
-                if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 8; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 4; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 2; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
-                else if( abs( ( flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 160)     { nDelta = 8; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 90) { nDelta = 4; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 16) { nDelta = 2; gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 14) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 13) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 11) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) > 10) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
+                else if( abs( ( gl_ush_flashParamAmplitudeCode << 4) - gl_lnMeanImps) >  8) {             gl_snMeaningCounterRound = 512;  gl_snMeaningShift = 9; }
                 else                                                                 {             gl_snMeaningCounterRound = 1024; gl_snMeaningShift = 10; }
               }
             }
@@ -2512,7 +2512,7 @@ void main() {
             /*
             //"встрясковая" подстройка (включение посреди рабочего режима)
             if( gl_snMeaningCounterRound == MEANING_IMP_PERIOD_STABLE) {
-              if( abs( flashParamAmplitudeCode - gl_dMeanImps) > 5) {
+              if( abs( gl_ush_flashParamAmplitudeCode - gl_dMeanImps) > 5) {
                 nDelta = ( RULA_MAX - RULA_MIN) / 4;
                 gl_snMeaningCounterRound = MEANING_IMP_PERIOD_100;
               }

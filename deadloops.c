@@ -22,14 +22,14 @@ extern char pos_in_in_buf;
 extern char input_buffer[];
 
 //flash-stored params declared in Main.c
-extern unsigned short flashParamAmplitudeCode;    //амплитуда колебания виброподвеса
-extern unsigned short flashParamTactCode;         //код такта
-extern unsigned short flashParamMCoeff;           //коэффициент ошумления
-extern unsigned short flashParamStartMode;        //начальная мода
+extern unsigned short gl_ush_flashParamAmplitudeCode;    //амплитуда колебания виброподвеса
+extern unsigned short gl_ush_flashParamTactCode;         //код такта
+extern unsigned short gl_ush_flashParamMCoeff;           //коэффициент ошумления
+extern unsigned short gl_ush_flashParamStartMode;        //начальная мода
 extern unsigned short flashParamI1min;            //контрольное значение токв поджига I1
 extern unsigned short flashParamI2min;            //контрольное значение тока поджига I2
 extern unsigned short flashParamAmplAngMin1;      //контрольное значение раскачки с ДУСа
-extern unsigned short flashParamDecCoeff;         //коэффициент вычета
+extern unsigned short gl_ush_flashParamDecCoeff;         //коэффициент вычета
 extern unsigned short flashParamSignCoeff;        //знаковый коэффициент
 extern unsigned short flashParamHvApplyCount;     //HV_applies tries amount
 extern unsigned short flashParamHvApplyDurat;     //HV_applies tries duration [msec]
@@ -60,14 +60,14 @@ void deadloop_no_firing( int nError) {
   gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
   //выдача данных
-    gl_nSentPackIndex = AMPLITUDE;  send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;  send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;    send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;  send_pack( flashParamStartMode);
+    gl_nSentPackIndex = AMPLITUDE;  send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;  send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;    send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;  send_pack( gl_ush_flashParamStartMode);
     gl_nSentPackIndex = CONTROL_I1; send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2; send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA; send_pack( flashParamAmplAngMin1);
-    gl_nSentPackIndex = DECCOEFF;   send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = DECCOEFF;   send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = SIGNCOEFF;  send_pack( flashParamSignCoeff);
     gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
@@ -85,11 +85,11 @@ void deadloop_no_firing( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
@@ -135,14 +135,14 @@ void deadloop_current_unstable( int nError) {
   gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
   //выдача данных
-    gl_nSentPackIndex = AMPLITUDE;  send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;  send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;    send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;  send_pack( flashParamStartMode);
+    gl_nSentPackIndex = AMPLITUDE;  send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;  send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;    send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;  send_pack( gl_ush_flashParamStartMode);
     gl_nSentPackIndex = CONTROL_I1; send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2; send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA; send_pack( flashParamAmplAngMin1);
-    gl_nSentPackIndex = DECCOEFF;   send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = DECCOEFF;   send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = SIGNCOEFF;  send_pack( flashParamSignCoeff);
     gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
@@ -160,11 +160,11 @@ void deadloop_current_unstable( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
@@ -241,11 +241,11 @@ void deadloop_no_hangerup( void) {
 
     //выдача данных
     gl_nSentPackIndex = AMPLANG_DUS;  send_pack( gl_ssh_ampl_angle);
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);
@@ -303,11 +303,11 @@ void deadloop_no_tact( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( flashParamDecCoeff);
+    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
     gl_nSentPackIndex = CONTROL_I1;   send_pack( flashParamI1min);
     gl_nSentPackIndex = CONTROL_I2;   send_pack( flashParamI2min);
     gl_nSentPackIndex = CONTROL_AA;   send_pack( flashParamAmplAngMin1);

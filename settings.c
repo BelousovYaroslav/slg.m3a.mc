@@ -10,11 +10,11 @@ extern char gl_c_EmergencyCode;
 
 //flash-stored params declared in Main.c
 //page 1
-extern unsigned short flashParamAmplitudeCode;    //амплитуда колебания виброподвеса
-extern unsigned short flashParamTactCode;         //код такта
-extern unsigned short flashParamMCoeff;           //коэффициент ошумления
-extern unsigned short flashParamStartMode;        //начальная мода
-extern unsigned short flashParamDecCoeff;         //коэффициент вычета
+extern unsigned short gl_ush_flashParamAmplitudeCode;    //амплитуда колебания виброподвеса
+extern unsigned short gl_ush_flashParamTactCode;         //код такта
+extern unsigned short gl_ush_flashParamMCoeff;           //коэффициент ошумления
+extern unsigned short gl_ush_flashParamStartMode;        //начальная мода
+extern unsigned short gl_ush_flashParamDecCoeff;         //коэффициент вычета
 extern unsigned short flashLockDev;               //флаг блокировки устройства
 
 //page 2
@@ -42,25 +42,25 @@ extern unsigned short flashParamT2_TD1_val, flashParamT2_TD2_val, flashParamT2_T
 
 void load_params_p1( void) {
   //код амплитуды
-  if( flashEE_load_short( ADDR_AMPLITUDE, &flashParamAmplitudeCode))  gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_AMPLITUDE, &gl_ush_flashParamAmplitudeCode))  gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //код такта подставки
-  if( flashEE_load_short( ADDR_TACT_CODE, &flashParamTactCode))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_TACT_CODE, &gl_ush_flashParamTactCode))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //коэффициент М
-  if( flashEE_load_short( ADDR_M_COEFF, &flashParamMCoeff))           gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_M_COEFF,   &gl_ush_flashParamMCoeff))         gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //Начальная мода
-  if( flashEE_load_short( ADDR_START_MODE, &flashParamStartMode))     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_START_MODE, &gl_ush_flashParamStartMode))     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //коэффициент вычета
-  if( flashEE_load_short( ADDR_DEC_COEFF, &flashParamDecCoeff))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_DEC_COEFF, &gl_ush_flashParamDecCoeff))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //флаг блокировки устройства
   if( flashEE_load_short( ADDR_LOCK_DEV, &flashLockDev))              gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   
 #ifdef DEBUG
   printf("DBG: load_params(): params loaded from flash memory. Here they are:\n");
-  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", flashParamAmplitudeCode, flashParamAmplitudeCode); //код амплитуды
-  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", flashParamTactCode, flashParamTactCode);   //код такта подставки
-  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", flashParamMCoeff, flashParamMCoeff);       //коэффициент М
-  printf("DBG:   Start Mode:     0x%04x (%04d)\n", flashParamStartMode, flashParamStartMode); //Начальная мода
-  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", flashParamDecCoeff, flashParamDecCoeff);   //коэффициент вычета
+  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", gl_ush_flashParamAmplitudeCode,  gl_ush_flashParamAmplitudeCode);  //код амплитуды
+  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", gl_ush_flashParamTactCode,       gl_ush_flashParamTactCode);       //код такта подставки
+  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
+  printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
+  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
   printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
 #endif
 }
@@ -190,26 +190,26 @@ void load_params_p4( void) {
 void check_params_p1( void) {
   //Код амплитуды [0-255]. дефолтное значение 90
   //90 для большого 35 для маленького
-  if( flashParamAmplitudeCode > 255)
-    flashParamAmplitudeCode = 35;
+  if( gl_ush_flashParamAmplitudeCode > 255)
+    gl_ush_flashParamAmplitudeCode = 35;
 
   //Код такта подставки [0-3]. дефолтное значение 0
-  if( flashParamTactCode > 3)
-    flashParamTactCode = 0;
+  if( gl_ush_flashParamTactCode > 3)
+    gl_ush_flashParamTactCode = 0;
 
   //Коэффициент М[0-1] = значения параметра [0-250]
   //дефолтное значение 200 (что означает M=0.8 и DAC1 = 0.8 * DAC0)
-  if( flashParamMCoeff > 250)
-    flashParamMCoeff = 200;
+  if( gl_ush_flashParamMCoeff > 250)
+    gl_ush_flashParamMCoeff = 200;
 
   //Начальная мода [0-250]. дефолтное значение 125 (что означает 1,25В на DAC2)
-  if( flashParamStartMode > 250)
-    flashParamStartMode = 125;
+  if( gl_ush_flashParamStartMode > 250)
+    gl_ush_flashParamStartMode = 125;
 
   //коэффициент вычета
-  //default значение 0,4 УТОЧНИТЬ!
-  if( flashParamDecCoeff == 0xffff)
-    flashParamDecCoeff = ( int) ( 0.4 * 65535.);
+  //default значение 0,04 УТОЧНИТЬ!
+  if( gl_ush_flashParamDecCoeff == 0xffff)
+    gl_ush_flashParamDecCoeff = ( int) ( 0.04 * 65535.);
 
   //флаг блокировки устройства
   //default значение 0 - режим разработчиков
@@ -218,11 +218,11 @@ void check_params_p1( void) {
 
 #ifdef DEBUG
   printf("DBG: check_params_p1(): params checked for the range. Here they are:\n");
-  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", flashParamAmplitudeCode, flashParamAmplitudeCode); //код амплитуды
-  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", flashParamTactCode, flashParamTactCode);   //код такта подставки
-  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", flashParamMCoeff, flashParamMCoeff);       //коэффициент М
-  printf("DBG:   Start Mode:     0x%04x (%04d)\n", flashParamStartMode, flashParamStartMode); //Начальная мода
-  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", flashParamDecCoeff, flashParamDecCoeff);   //коэффициент вычета
+  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", gl_ush_flashParamAmplitudeCode,  gl_ush_flashParamAmplitudeCode);  //код амплитуды
+  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", gl_ush_flashParamTactCode,       gl_ush_flashParamTactCode);       //код такта подставки
+  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
+  printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
+  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
   printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
 #endif
 }
@@ -350,11 +350,11 @@ void load_params( void) {
 void save_params_p1( void) {
 #ifdef DEBUG
   printf("DBG: save_params_p1(): params to be saved are:\n");
-  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", flashParamAmplitudeCode, flashParamAmplitudeCode); //код амплитуды
-  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", flashParamTactCode, flashParamTactCode);   //код такта подставки
-  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", flashParamMCoeff, flashParamMCoeff);       //коэффициент М
-  printf("DBG:   Start Mode:     0x%04x (%04d)\n", flashParamStartMode, flashParamStartMode); //Начальная мода
-  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", flashParamDecCoeff, flashParamDecCoeff);   //коэффициент вычета
+  printf("DBG:   Amplitude Code: 0x%04x (%04d)\n", gl_ush_flashParamAmplitudeCode,  gl_ush_flashParamAmplitudeCode);  //код амплитуды
+  printf("DBG:   Base Tact Code: 0x%04x (%04d)\n", gl_ush_flashParamTactCode,       gl_ush_flashParamTactCode);       //код такта подставки
+  printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
+  printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
+  printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
   printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
 #endif
 
@@ -363,23 +363,23 @@ void save_params_p1( void) {
     return;
   }
 
-  if( flashEE_save_short( ADDR_AMPLITUDE, flashParamAmplitudeCode)) {
+  if( flashEE_save_short( ADDR_AMPLITUDE, gl_ush_flashParamAmplitudeCode)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TACT_CODE, flashParamTactCode)) {
+  if( flashEE_save_short( ADDR_TACT_CODE, gl_ush_flashParamTactCode)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_M_COEFF, flashParamMCoeff)) {
+  if( flashEE_save_short( ADDR_M_COEFF, gl_ush_flashParamMCoeff)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_START_MODE, flashParamStartMode)) {
+  if( flashEE_save_short( ADDR_START_MODE, gl_ush_flashParamStartMode)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_DEC_COEFF, flashParamDecCoeff)) {
+  if( flashEE_save_short( ADDR_DEC_COEFF, gl_ush_flashParamDecCoeff)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }

@@ -41,11 +41,11 @@ extern char gl_bAsyncDu;
 
 
 //page 1
-extern unsigned short flashParamAmplitudeCode;     //Hanger Vibration Amplitude set
-extern unsigned short flashParamTactCode;          //Tact Code set
-extern unsigned short flashParamMCoeff;            //Noise Coefficient set
-extern unsigned short flashParamStartMode;         //Start mode set
-extern unsigned short flashParamDecCoeff;          //коэффициент вычета
+extern unsigned short gl_ush_flashParamAmplitudeCode;     //Hanger Vibration Amplitude set
+extern unsigned short gl_ush_flashParamTactCode;          //Tact Code set
+extern unsigned short gl_ush_flashParamMCoeff;            //Noise Coefficient set
+extern unsigned short gl_ush_flashParamStartMode;         //Start mode set
+extern unsigned short gl_ush_flashParamDecCoeff;          //коэффициент вычета
 extern unsigned short flashLockDev;                //флаг блокировки устройства
 
 //page 2
@@ -120,7 +120,7 @@ void processIncomingCommand( void) {
       case MC_COMMAND_SET:
         switch( input_buffer[1]) {
           case AMPLITUDE:   //Set Amplitude of Hangreup Vibration
-            flashParamAmplitudeCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamAmplitudeCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             gl_nSentPackIndex = AMPLITUDE;
 
             /*
@@ -145,7 +145,7 @@ void processIncomingCommand( void) {
           break;
 
           case TACT_CODE:   //Set CodeTact
-            flashParamTactCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamTactCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             configure_hanger();
             gl_nSentPackIndex = TACT_CODE;
 
@@ -155,7 +155,7 @@ void processIncomingCommand( void) {
           break;
 
           case M_COEFF: //Set NoiseCoefficient M
-            flashParamMCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamMCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             DACConfiguration();
             gl_nSentPackIndex = M_COEFF;
 
@@ -165,7 +165,7 @@ void processIncomingCommand( void) {
           break;
 
           case STARTMODE: //Set StartMode
-            flashParamStartMode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamStartMode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             DACConfiguration();
             GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
 
@@ -176,7 +176,7 @@ void processIncomingCommand( void) {
           break;
 
           case DECCOEFF: //Set decrement coeff
-            flashParamDecCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamDecCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
             gl_nSentPackIndex = DECCOEFF;
           break;
 
