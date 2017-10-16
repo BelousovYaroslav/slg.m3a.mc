@@ -15,44 +15,44 @@ extern unsigned short gl_ush_flashParamTactCode;         //код такта
 extern unsigned short gl_ush_flashParamMCoeff;           //коэффициент ошумления
 extern unsigned short gl_ush_flashParamStartMode;        //начальная мода
 extern unsigned short gl_ush_flashParamDecCoeff;         //коэффициент вычета
-extern unsigned short flashLockDev;               //флаг блокировки устройства
+extern unsigned short gl_ush_flashLockDev;               //флаг блокировки устройства
 
 //page 2
-extern unsigned short flashParamI1min;            //контрольное значение токв поджига I1
-extern unsigned short flashParamI2min;            //контрольное значение тока поджига I2
-extern unsigned short flashParamAmplAngMin1;      //контрольное значение раскачки с ДУСа
-extern unsigned short flashParamHvApplyCount;     //Количество попыток применения 3kV при поджиге в пачке
-extern unsigned short flashParamHvApplyDurat;     //Длительность попыток применения 3kV при поджиге [мсек]
-extern unsigned short flashParamHvApplyPacks;     //Количество пачек попыток поджига
+extern unsigned short gl_ush_flashParamI1min;            //контрольное значение токв поджига I1
+extern unsigned short gl_ush_flashParamI2min;            //контрольное значение тока поджига I2
+extern unsigned short gl_ush_flashParamAmplAngMin1;      //контрольное значение раскачки с ДУСа
+extern unsigned short gl_ush_flashParamHvApplyCount;     //Количество попыток применения 3kV при поджиге в пачке
+extern unsigned short gl_ush_flashParamHvApplyDurat;     //Длительность попыток применения 3kV при поджиге [мсек]
+extern unsigned short gl_ush_flashParamHvApplyPacks;     //Количество пачек попыток поджига
 
 //page 3
-extern unsigned short flashParamSignCoeff;        //знаковый коэффициент
-extern unsigned short flashParamDeviceId;         //ID устройства
-extern unsigned short flashParamDateYear;         //дата прибора.год
-extern unsigned short flashParamDateMonth;        //дата прибора.месяц
-extern unsigned short flashParamDateDay;          //дата прибора.день
-extern char flashParamOrg[];                      //название организации
+extern unsigned short gl_ush_flashParamSignCoeff;        //знаковый коэффициент
+extern unsigned short gl_ush_flashParamDeviceId;         //ID устройства
+extern unsigned short gl_ush_flashParamDateYear;         //дата прибора.год
+extern unsigned short gl_ush_flashParamDateMonth;        //дата прибора.месяц
+extern unsigned short gl_ush_flashParamDateDay;          //дата прибора.день
+extern char gl_ac_flashParamOrg[];                       //название организации
 
 
 //калибровка термодатчиков
-extern signed short flashParam_calibT1;
-extern unsigned short flashParamT1_TD1_val, flashParamT1_TD2_val, flashParamT1_TD3_val;
-extern signed short flashParam_calibT2;
-extern unsigned short flashParamT2_TD1_val, flashParamT2_TD2_val, flashParamT2_TD3_val;
+extern signed short     gl_ush_flashParam_calibT1;
+extern unsigned short   gl_ush_flashParamT1_TD1_val, gl_ush_flashParamT1_TD2_val, gl_ush_flashParamT1_TD3_val;
+extern signed short     gl_ush_flashParam_calibT2;
+extern unsigned short   gl_ush_flashParamT2_TD1_val, gl_ush_flashParamT2_TD2_val, gl_ush_flashParamT2_TD3_val;
 
 void load_params_p1( void) {
   //код амплитуды
-  if( flashEE_load_short( ADDR_AMPLITUDE, &gl_ush_flashParamAmplitudeCode))  gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_AMPLITUDE,   &gl_ush_flashParamAmplitudeCode)) gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //код такта подставки
-  if( flashEE_load_short( ADDR_TACT_CODE, &gl_ush_flashParamTactCode))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_TACT_CODE,   &gl_ush_flashParamTactCode))      gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //коэффициент М
-  if( flashEE_load_short( ADDR_M_COEFF,   &gl_ush_flashParamMCoeff))         gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_M_COEFF,     &gl_ush_flashParamMCoeff))        gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //Начальная мода
-  if( flashEE_load_short( ADDR_START_MODE, &gl_ush_flashParamStartMode))     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_START_MODE,  &gl_ush_flashParamStartMode))     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //коэффициент вычета
-  if( flashEE_load_short( ADDR_DEC_COEFF, &gl_ush_flashParamDecCoeff))       gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_DEC_COEFF,   &gl_ush_flashParamDecCoeff))      gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   //флаг блокировки устройства
-  if( flashEE_load_short( ADDR_LOCK_DEV, &flashLockDev))              gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
+  if( flashEE_load_short( ADDR_LOCK_DEV,    &gl_ush_flashLockDev))            gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   
 #ifdef DEBUG
   printf("DBG: load_params(): params loaded from flash memory. Here they are:\n");
@@ -61,129 +61,129 @@ void load_params_p1( void) {
   printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
   printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
   printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
-  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
+  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", gl_ush_flashLockDev,             gl_ush_flashLockDev);             //флаг блокировки устройства
 #endif
 }
 
 void load_params_p2( void) {
   //минимальный ток I1
-  if( flashEE_load_short( ADDR_CONTROL_I1, &flashParamI1min)) {
+  if( flashEE_load_short( ADDR_CONTROL_I1, &gl_ush_flashParamI1min)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //минимальный ток I2
-  if( flashEE_load_short( ADDR_CONTROL_I2, &flashParamI2min)) {
+  if( flashEE_load_short( ADDR_CONTROL_I2, &gl_ush_flashParamI2min)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //минимальный AmplAng
-  if( flashEE_load_short( ADDR_CONTROL_AA, &flashParamAmplAngMin1)) {
+  if( flashEE_load_short( ADDR_CONTROL_AA, &gl_ush_flashParamAmplAngMin1)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Количество попыток применения 3kV при поджиге в пачке
-  if( flashEE_load_short( ADDR_HV_APPLY_C, &flashParamHvApplyCount)) {
+  if( flashEE_load_short( ADDR_HV_APPLY_C, &gl_ush_flashParamHvApplyCount)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Длительность попыток применения 3kV при поджиге
-  if( flashEE_load_short( ADDR_HV_APPLY_D, &flashParamHvApplyDurat)) {
+  if( flashEE_load_short( ADDR_HV_APPLY_D, &gl_ush_flashParamHvApplyDurat)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Количество пачек попыток поджига
-  if( flashEE_load_short( ADDR_HV_APPLY_P, &flashParamHvApplyPacks)) {
+  if( flashEE_load_short( ADDR_HV_APPLY_P, &gl_ush_flashParamHvApplyPacks)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
 
 #ifdef DEBUG
   printf("DBG:load_params_p2()\n");
-  printf("DBG:   Control I1:     0x%04x (%04d)\n", flashParamI1min, flashParamI1min);                 //минимальный ток I1
-  printf("DBG:   Control I2:     0x%04x (%04d)\n", flashParamI2min, flashParamI2min);                 //минимальный ток I2
-  printf("DBG:   Control AA:     0x%04x (%04d)\n", flashParamAmplAngMin1, flashParamAmplAngMin1);     //минимальный AmplAng
-  printf("DBG:   HV_count:       0x%04x (%04d)\n", flashParamHvApplyCount, flashParamHvApplyCount);   //HV_applies tries amount in pack
-  printf("DBG:   HV_duration:    0x%04x (%04d)\n", flashParamHvApplyDurat, flashParamHvApplyDurat);   //HV_applies tries duration
-  printf("DBG:   HV_packs:       0x%04x (%04d)\n", flashParamHvApplyPacks, flashParamHvApplyPacks);   //HV_applies tries packs
+  printf("DBG:   Control I1:     0x%04x (%04d)\n", gl_ush_flashParamI1min,        gl_ush_flashParamI1min);        //минимальный ток I1
+  printf("DBG:   Control I2:     0x%04x (%04d)\n", gl_ush_flashParamI2min,        gl_ush_flashParamI2min);        //минимальный ток I2
+  printf("DBG:   Control AA:     0x%04x (%04d)\n", gl_ush_flashParamAmplAngMin1,  gl_ush_flashParamAmplAngMin1);  //минимальный AmplAng
+  printf("DBG:   HV_count:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyCount, gl_ush_flashParamHvApplyCount); //HV_applies tries amount in pack
+  printf("DBG:   HV_duration:    0x%04x (%04d)\n", gl_ush_flashParamHvApplyDurat, gl_ush_flashParamHvApplyDurat); //HV_applies tries duration
+  printf("DBG:   HV_packs:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyPacks, gl_ush_flashParamHvApplyPacks);   //HV_applies tries packs
 #endif
 }
 
 void load_params_p3( void) {
   //знаковый коэффициент
-  if( flashEE_load_short( ADDR_SIGN_COEFF, &flashParamSignCoeff)) {
+  if( flashEE_load_short( ADDR_SIGN_COEFF, &gl_ush_flashParamSignCoeff)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //серийный номер
-  if( flashEE_load_short( ADDR_DEVICE_ID, &flashParamDeviceId)) {
+  if( flashEE_load_short( ADDR_DEVICE_ID, &gl_ush_flashParamDeviceId)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //дата.год
-  if( flashEE_load_short( ADDR_DATE_Y, &flashParamDateYear)) {
+  if( flashEE_load_short( ADDR_DATE_Y, &gl_ush_flashParamDateYear)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //дата.месяц
-  if( flashEE_load_short( ADDR_DATE_M, &flashParamDateMonth)) {
+  if( flashEE_load_short( ADDR_DATE_M, &gl_ush_flashParamDateMonth)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //дата.день
-  if( flashEE_load_short( ADDR_DATE_D, &flashParamDateDay)) {
+  if( flashEE_load_short( ADDR_DATE_D, &gl_ush_flashParamDateDay)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //организация
-  if( flashEE_load_text( ADDR_ORG, flashParamOrg, 16)) {
+  if( flashEE_load_text( ADDR_ORG, gl_ac_flashParamOrg, 16)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
 
 #ifdef DEBUG
   printf("DBG:load_params_p3()\n");
-  printf("DBG:   Sign coeff:      0x%04x (%04d)\n", flashParamSignCoeff, flashParamSignCoeff); //знаковый коэффициент
-  printf("DBG:   Serial number:   0x%04x (%04d)\n", flashParamDeviceId, flashParamDeviceId);   //серийный номер
-  printf("DBG:   Organization:    '%s'\n", flashParamOrg);                                     //организация
-  printf("DBG:   Year:            0x%04x (%04d)\n", flashParamDateYear, flashParamDateYear);   //год
-  printf("DBG:   Month:           0x%04x (%04d)\n", flashParamDateMonth, flashParamDateMonth); //месяц
-  printf("DBG:   Day:             0x%04x (%04d)\n", flashParamDateDay, flashParamDateDay);     //день
+  printf("DBG:   Sign coeff:      0x%04x (%04d)\n", gl_ush_flashParamSignCoeff, gl_ush_flashParamSignCoeff);  //знаковый коэффициент
+  printf("DBG:   Serial number:   0x%04x (%04d)\n", gl_ush_flashParamDeviceId,  gl_ush_flashParamDeviceId);   //серийный номер
+  printf("DBG:   Organization:    '%s'\n", gl_ac_flashParamOrg);                                              //организация
+  printf("DBG:   Year:            0x%04x (%04d)\n", gl_ush_flashParamDateYear,  gl_ush_flashParamDateYear);   //год
+  printf("DBG:   Month:           0x%04x (%04d)\n", gl_ush_flashParamDateMonth, gl_ush_flashParamDateMonth);  //месяц
+  printf("DBG:   Day:             0x%04x (%04d)\n", gl_ush_flashParamDateDay,   gl_ush_flashParamDateDay);    //день
 #endif
 }
 
 void load_params_p4( void) {
   //Температура минимальной точки калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T1, ( unsigned short *) &flashParam_calibT1)) {
+  if( flashEE_load_short( ADDR_TCALIB_T1, ( unsigned short *) &gl_ush_flashParam_calibT1)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты первого термодатчика при минимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T1_TD1, &flashParamT1_TD1_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T1_TD1, &gl_ush_flashParamT1_TD1_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты второго термодатчика при минимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T1_TD2, &flashParamT1_TD2_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T1_TD2, &gl_ush_flashParamT1_TD2_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты третьего термодатчика при минимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T1_TD3, &flashParamT1_TD3_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T1_TD3, &gl_ush_flashParamT1_TD3_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
 
   //Температура максимальной точки калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T2, ( unsigned short *) &flashParam_calibT2)) {
+  if( flashEE_load_short( ADDR_TCALIB_T2, ( unsigned short *) &gl_ush_flashParam_calibT2)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты первого термодатчика при максимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T2_TD1, &flashParamT2_TD1_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T2_TD1, &gl_ush_flashParamT2_TD1_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты второго термодатчика при максимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T2_TD2, &flashParamT2_TD2_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T2_TD2, &gl_ush_flashParamT2_TD2_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
   //Отсчёты второго термодатчика при максимальной температуре калибровки
-  if( flashEE_load_short( ADDR_TCALIB_T2_TD3, &flashParamT2_TD3_val)) {
+  if( flashEE_load_short( ADDR_TCALIB_T2_TD3, &gl_ush_flashParamT2_TD3_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_LOAD_PARAMS_FAIL;
   }
 #ifdef DEBUG
   printf("DBG:load_params_p4()\n");
-  printf("DBG:   T-Calibration T1=0x%04x (%04d)\n", flashParam_calibT1, flashParam_calibT1);      //Температурная калибровка: температура нижней точки
-  printf("DBG:   T1_TD1:          0x%04x (%04d)\n", flashParamT1_TD1_val, flashParamT1_TD1_val);  //Температурная калибровка: показания термодатчика TD1 в нижней температурной точке
-  printf("DBG:   T1_TD2:          0x%04x (%04d)\n", flashParamT1_TD2_val, flashParamT1_TD2_val);  //Температурная калибровка: показания термодатчика TD2 в нижней температурной точке
-  printf("DBG:   T1_TD3:          0x%04x (%04d)\n", flashParamT1_TD3_val, flashParamT1_TD3_val);  //Температурная калибровка: показания термодатчика TD3 в нижней температурной точке
+  printf("DBG:   T-Calibration T1=0x%04x (%04d)\n", gl_ush_flashParam_calibT1,    gl_ush_flashParam_calibT1);    //Температурная калибровка: температура нижней точки
+  printf("DBG:   T1_TD1:          0x%04x (%04d)\n", gl_ush_flashParamT1_TD1_val,  gl_ush_flashParamT1_TD1_val);  //Температурная калибровка: показания термодатчика TD1 в нижней температурной точке
+  printf("DBG:   T1_TD2:          0x%04x (%04d)\n", gl_ush_flashParamT1_TD2_val,  gl_ush_flashParamT1_TD2_val);  //Температурная калибровка: показания термодатчика TD2 в нижней температурной точке
+  printf("DBG:   T1_TD3:          0x%04x (%04d)\n", gl_ush_flashParamT1_TD3_val,  gl_ush_flashParamT1_TD3_val);  //Температурная калибровка: показания термодатчика TD3 в нижней температурной точке
 
-  printf("DBG:   T-Calibration T2=0x%04x (%04d)\n", flashParam_calibT2, flashParam_calibT2);      //Температурная калибровка: температура верхней точки
-  printf("DBG:   T1_TD1:          0x%04x (%04d)\n", flashParamT2_TD1_val, flashParamT2_TD1_val);  //Температурная калибровка: показания термодатчика TD1 в верхней температурной точке
-  printf("DBG:   T1_TD2:          0x%04x (%04d)\n", flashParamT2_TD2_val, flashParamT2_TD2_val);  //Температурная калибровка: показания термодатчика TD2 в верхней температурной точке
-  printf("DBG:   T1_TD3:          0x%04x (%04d)\n", flashParamT2_TD3_val, flashParamT2_TD3_val);  //Температурная калибровка: показания термодатчика TD3 в верхней температурной точке
+  printf("DBG:   T-Calibration T2=0x%04x (%04d)\n", gl_ush_flashParam_calibT2,    gl_ush_flashParam_calibT2);    //Температурная калибровка: температура верхней точки
+  printf("DBG:   T1_TD1:          0x%04x (%04d)\n", gl_ush_flashParamT2_TD1_val,  gl_ush_flashParamT2_TD1_val);  //Температурная калибровка: показания термодатчика TD1 в верхней температурной точке
+  printf("DBG:   T1_TD2:          0x%04x (%04d)\n", gl_ush_flashParamT2_TD2_val,  gl_ush_flashParamT2_TD2_val);  //Температурная калибровка: показания термодатчика TD2 в верхней температурной точке
+  printf("DBG:   T1_TD3:          0x%04x (%04d)\n", gl_ush_flashParamT2_TD3_val,  gl_ush_flashParamT2_TD3_val);  //Температурная калибровка: показания термодатчика TD3 в верхней температурной точке
 #endif
 }
 
@@ -213,8 +213,8 @@ void check_params_p1( void) {
 
   //флаг блокировки устройства
   //default значение 0 - режим разработчиков
-  if( flashLockDev != 1)
-    flashLockDev = 0;
+  if( gl_ush_flashLockDev != 1)
+    gl_ush_flashLockDev = 0;
 
 #ifdef DEBUG
   printf("DBG: check_params_p1(): params checked for the range. Here they are:\n");
@@ -223,52 +223,52 @@ void check_params_p1( void) {
   printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
   printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
   printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
-  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
+  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", gl_ush_flashLockDev,             gl_ush_flashLockDev);             //флаг блокировки устройства
 #endif
 }
 
 void check_params_p2( void) {
   //контрольный ток поджига I1 [0-0.750 mA] = значения параметра [ 0 - 65534]
   //default значение 0.4 mA
-  if( flashParamI1min == 0xffff)
-    flashParamI1min = ( short) ( 65535. * 0.4 / 0.75);
+  if( gl_ush_flashParamI1min == 0xffff)
+    gl_ush_flashParamI1min = ( short) ( 65535. * 0.4 / 0.75);
 
   //контрольный ток поджига I2 [0-0.750 mA] = значения параметра [ 0 - 65534]
   //default значение 0.4 mA
-  if( flashParamI2min == 0xffff)
-    flashParamI2min = ( short) ( 65535. * 0.4 / 0.75);
+  if( gl_ush_flashParamI2min == 0xffff)
+    gl_ush_flashParamI2min = ( short) ( 65535. * 0.4 / 0.75);
 
   //контрольное значение раскачки - амплитуда ДУПа (0-3В) = значения параметра [ 0 - 65534]
   //default значение 1.0В
-  if( flashParamAmplAngMin1 == 0xffff)
-    flashParamAmplAngMin1 = ( int) ( 1.0 / 3. * 65535.);
+  if( gl_ush_flashParamAmplAngMin1 == 0xffff)
+    gl_ush_flashParamAmplAngMin1 = ( int) ( 1.0 / 3. * 65535.);
 
   //количество попыток применения 3kV при поджиге ( 1 - 20)
   //default value = 10
-  if( flashParamHvApplyCount < 1 || flashParamHvApplyCount > 20) {
-    flashParamHvApplyCount = 10;
+  if( gl_ush_flashParamHvApplyCount < 1 || gl_ush_flashParamHvApplyCount > 20) {
+    gl_ush_flashParamHvApplyCount = 10;
   }
 
   //HV_applies tries duration [0 - 5 sec] = values [0 - 5000]
   //default value = 1000
-  if( flashParamHvApplyDurat < 1 || flashParamHvApplyDurat > 5000) {
-    flashParamHvApplyDurat = 1000;
+  if( gl_ush_flashParamHvApplyDurat < 1 || gl_ush_flashParamHvApplyDurat > 5000) {
+    gl_ush_flashParamHvApplyDurat = 1000;
   }
 
   //HV_applies tries packs [1 - 10] = values [1 - 10]
   //default value = 5
-  if( flashParamHvApplyPacks < 1 || flashParamHvApplyPacks > 10) {
-    flashParamHvApplyPacks = 5;
+  if( gl_ush_flashParamHvApplyPacks < 1 || gl_ush_flashParamHvApplyPacks > 10) {
+    gl_ush_flashParamHvApplyPacks = 5;
   }
 
 #ifdef DEBUG
   printf("DBG: check_params_p2(): params checked for the range. Here they are:\n");
-  printf("DBG:   Control I1:     0x%04x (%04d)\n", flashParamI1min, flashParamI1min);                 //минимальный ток I1
-  printf("DBG:   Control I2:     0x%04x (%04d)\n", flashParamI2min, flashParamI2min);                 //минимальный ток I2
-  printf("DBG:   Control AA:     0x%04x (%04d)\n", flashParamAmplAngMin1, flashParamAmplAngMin1);     //минимальный AmplAng
-  printf("DBG:   HV_count:       0x%04x (%04d)\n", flashParamHvApplyCount, flashParamHvApplyCount);   //HV_applies tries amount
-  printf("DBG:   HV_duration:    0x%04x (%04d)\n", flashParamHvApplyDurat, flashParamHvApplyDurat);   //HV_applies tries duration
-  printf("DBG:   HV_packs:       0x%04x (%04d)\n", flashParamHvApplyPacks, flashParamHvApplyPacks);   //HV_applies tries packs
+  printf("DBG:   Control I1:     0x%04x (%04d)\n", gl_ush_flashParamI1min,        gl_ush_flashParamI1min);        //минимальный ток I1
+  printf("DBG:   Control I2:     0x%04x (%04d)\n", gl_ush_flashParamI2min,        gl_ush_flashParamI2min);        //минимальный ток I2
+  printf("DBG:   Control AA:     0x%04x (%04d)\n", gl_ush_flashParamAmplAngMin1,  gl_ush_flashParamAmplAngMin1);  //минимальный AmplAng
+  printf("DBG:   HV_count:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyCount, gl_ush_flashParamHvApplyCount); //HV_applies tries amount
+  printf("DBG:   HV_duration:    0x%04x (%04d)\n", gl_ush_flashParamHvApplyDurat, gl_ush_flashParamHvApplyDurat);   //HV_applies tries duration
+  printf("DBG:   HV_packs:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyPacks, gl_ush_flashParamHvApplyPacks);   //HV_applies tries packs
 #endif
 }
 
@@ -276,59 +276,61 @@ void check_params_p3( void) {
   int i;
   //знаковый коэффициент. [-1; +1]
   //default value = 1
-  if( flashParamSignCoeff > 2)
-    flashParamSignCoeff = 2;
+  if( gl_ush_flashParamSignCoeff > 2)
+    gl_ush_flashParamSignCoeff = 2;
 
   //ID устройства
-  if( flashParamDeviceId == 65535)
-    flashParamDeviceId = 0;
+  if( gl_ush_flashParamDeviceId == 65535)
+    gl_ush_flashParamDeviceId = 0;
 
   //Дата ?? устройства
   //default value = 2016.01.01
-  if( flashParamDateYear < 2000 || flashParamDateYear > 2200)
-    flashParamDateYear = 2016;
+  if( gl_ush_flashParamDateYear < 2000 || gl_ush_flashParamDateYear > 2200)
+    gl_ush_flashParamDateYear = 2016;
 
-  if( flashParamDateMonth > 12)
-    flashParamDateMonth = 1;
+  if( gl_ush_flashParamDateMonth > 12)
+    gl_ush_flashParamDateMonth = 1;
 
-  if( flashParamDateDay > 31)
-    flashParamDateDay = 1;
+  if( gl_ush_flashParamDateDay > 31)
+    gl_ush_flashParamDateDay = 1;
 
   //название организации
   //default - все минусы
   for( i=0; i<17; i++) {
-    if( flashParamOrg[i] < 33 || flashParamOrg[i] > 126)
-      flashParamOrg[i] = ' ';
+    if( gl_ac_flashParamOrg[i] < 33 || gl_ac_flashParamOrg[i] > 126)
+      gl_ac_flashParamOrg[i] = ' ';
   }
 
 
 
 #ifdef DEBUG
   printf("DBG: check_params_p3(): params checked for the range. Here they are:\n");
-  printf("DBG:   Sign coeff:     0x%04x (%04d)\n", flashParamSignCoeff, flashParamSignCoeff); //знаковый коэффициент
-  printf("DBG:   Serial number:  0x%04x (%04d)\n", flashParamDeviceId, flashParamDeviceId);   //серийный номер
-  printf("DBG:   Year:           0x%04x (%04d)\n", flashParamDateYear, flashParamDateYear);   //год
-  printf("DBG:   Month:          0x%04x (%04d)\n", flashParamDateMonth, flashParamDateMonth); //месяц
-  printf("DBG:   Day:            0x%04x (%04d)\n", flashParamDateDay, flashParamDateDay);     //день
-  printf("DBG:   Organization:   '%s'\n", flashParamOrg);                                     //организация
+  printf("DBG:   Sign coeff:     0x%04x (%04d)\n", gl_ush_flashParamSignCoeff,  gl_ush_flashParamSignCoeff);  //знаковый коэффициент
+  printf("DBG:   Serial number:  0x%04x (%04d)\n", gl_ush_flashParamDeviceId,   gl_ush_flashParamDeviceId);   //серийный номер
+  printf("DBG:   Year:           0x%04x (%04d)\n", gl_ush_flashParamDateYear,   gl_ush_flashParamDateYear);   //год
+  printf("DBG:   Month:          0x%04x (%04d)\n", gl_ush_flashParamDateMonth,  gl_ush_flashParamDateMonth);  //месяц
+  printf("DBG:   Day:            0x%04x (%04d)\n", gl_ush_flashParamDateDay,    gl_ush_flashParamDateDay);    //день
+  printf("DBG:   Organization:   '%s'\n", gl_ac_flashParamOrg);                                               //организация
 #endif
 }
 
 void check_params_p4( void) {
-  if( flashParam_calibT1 < ( THERMO_CALIB_PARAMS_BASE + MIN_T_THERMO_CALIBRATION)  ||
-      flashParam_calibT1 > ( THERMO_CALIB_PARAMS_BASE + MAX_T_THERMO_CALIBRATION)) {
-    flashParam_calibT1 = 0;
-    flashParamT1_TD1_val = 0;
-    flashParamT1_TD2_val = 1;
-    flashParamT1_TD3_val = 2;
+  if( gl_ush_flashParam_calibT1 < ( THERMO_CALIB_PARAMS_BASE + MIN_T_THERMO_CALIBRATION)  ||
+      gl_ush_flashParam_calibT1 > ( THERMO_CALIB_PARAMS_BASE + MAX_T_THERMO_CALIBRATION)) {
+
+    gl_ush_flashParam_calibT1 = 0;
+    gl_ush_flashParamT1_TD1_val = 0;
+    gl_ush_flashParamT1_TD2_val = 1;
+    gl_ush_flashParamT1_TD3_val = 2;
   }
 
-  if( flashParam_calibT2 < ( THERMO_CALIB_PARAMS_BASE + MIN_T_THERMO_CALIBRATION) ||
-      flashParam_calibT2 > ( THERMO_CALIB_PARAMS_BASE + MAX_T_THERMO_CALIBRATION)) {
-    flashParam_calibT2 = 0;
-    flashParamT2_TD1_val = 0;
-    flashParamT2_TD2_val = 1;
-    flashParamT2_TD3_val = 2;
+  if( gl_ush_flashParam_calibT2 < ( THERMO_CALIB_PARAMS_BASE + MIN_T_THERMO_CALIBRATION) ||
+      gl_ush_flashParam_calibT2 > ( THERMO_CALIB_PARAMS_BASE + MAX_T_THERMO_CALIBRATION)) {
+
+    gl_ush_flashParam_calibT2 = 0;
+    gl_ush_flashParamT2_TD1_val = 0;
+    gl_ush_flashParamT2_TD2_val = 1;
+    gl_ush_flashParamT2_TD3_val = 2;
   }
 #ifdef DEBUG
   printf("DBG: check_params_p4(): params checked for the range. Here they are:\n");
@@ -355,7 +357,7 @@ void save_params_p1( void) {
   printf("DBG:   M Coefficient:  0x%04x (%04d)\n", gl_ush_flashParamMCoeff,         gl_ush_flashParamMCoeff);         //коэффициент М
   printf("DBG:   Start Mode:     0x%04x (%04d)\n", gl_ush_flashParamStartMode,      gl_ush_flashParamStartMode);      //Начальная мода
   printf("DBG:   Dec. Coeff:     0x%04x (%04d)\n", gl_ush_flashParamDecCoeff,       gl_ush_flashParamDecCoeff);       //коэффициент вычета
-  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", flashLockDev, flashLockDev);               //флаг блокировки устройства
+  printf("DBG:   Dev Lock:       0x%04x (%04d)\n", gl_ush_flashLockDev,             gl_ush_flashLockDev);             //флаг блокировки устройства
 #endif
 
   if( flashEE_erase_page( ADDR_PAGE1)) {
@@ -384,11 +386,11 @@ void save_params_p1( void) {
     return;
   }
 #ifdef DEBUG
-  if( flashLockDev == 1) {
+  if( gl_ush_flashLockDev == 1) {
     printf( "DBG: device will be locked\n");
   }
 #endif
-  if( flashEE_save_short( ADDR_LOCK_DEV, flashLockDev)) {
+  if( flashEE_save_short( ADDR_LOCK_DEV, gl_ush_flashLockDev)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
@@ -397,12 +399,12 @@ void save_params_p1( void) {
 void save_params_p2( void) {
 #ifdef DEBUG
   printf("DBG: save_params_p2(): params to be saved are:\n");
-  printf("DBG:   Control I1:     0x%04x (%04d)\n", flashParamI1min, flashParamI1min);                 //минимальный ток I1
-  printf("DBG:   Control I2:     0x%04x (%04d)\n", flashParamI2min, flashParamI2min);                 //минимальный ток I2
-  printf("DBG:   Control AA:     0x%04x (%04d)\n", flashParamAmplAngMin1, flashParamAmplAngMin1);     //минимальный AmplAng
-  printf("DBG:   HV_count:       0x%04x (%04d)\n", flashParamHvApplyCount, flashParamHvApplyCount);   //HV_applies tries amount
-  printf("DBG:   HV_duration:    0x%04x (%04d)\n", flashParamHvApplyDurat, flashParamHvApplyDurat);   //HV_applies tries duration
-  printf("DBG:   HV_packs:       0x%04x (%04d)\n", flashParamHvApplyPacks, flashParamHvApplyPacks);   //HV_applies tries packs
+  printf("DBG:   Control I1:     0x%04x (%04d)\n", gl_ush_flashParamI1min,        gl_ush_flashParamI1min);        //минимальный ток I1
+  printf("DBG:   Control I2:     0x%04x (%04d)\n", gl_ush_flashParamI2min,        gl_ush_flashParamI2min);        //минимальный ток I2
+  printf("DBG:   Control AA:     0x%04x (%04d)\n", gl_ush_flashParamAmplAngMin1,  gl_ush_flashParamAmplAngMin1);  //минимальный AmplAng
+  printf("DBG:   HV_count:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyCount, gl_ush_flashParamHvApplyCount); //HV_applies tries amount
+  printf("DBG:   HV_duration:    0x%04x (%04d)\n", gl_ush_flashParamHvApplyDurat, gl_ush_flashParamHvApplyDurat); //HV_applies tries duration
+  printf("DBG:   HV_packs:       0x%04x (%04d)\n", gl_ush_flashParamHvApplyPacks, gl_ush_flashParamHvApplyPacks); //HV_applies tries packs
 #endif
 
   if( flashEE_erase_page( ADDR_PAGE2)) {
@@ -410,27 +412,27 @@ void save_params_p2( void) {
     return;
   }
 
-  if( flashEE_save_short( ADDR_CONTROL_I1, flashParamI1min)) {
+  if( flashEE_save_short( ADDR_CONTROL_I1, gl_ush_flashParamI1min)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_CONTROL_I2, flashParamI2min)) {
+  if( flashEE_save_short( ADDR_CONTROL_I2, gl_ush_flashParamI2min)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_CONTROL_AA, flashParamAmplAngMin1)) {
+  if( flashEE_save_short( ADDR_CONTROL_AA, gl_ush_flashParamAmplAngMin1)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_HV_APPLY_C, flashParamHvApplyCount)) {
+  if( flashEE_save_short( ADDR_HV_APPLY_C, gl_ush_flashParamHvApplyCount)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_HV_APPLY_D, flashParamHvApplyDurat)) {
+  if( flashEE_save_short( ADDR_HV_APPLY_D, gl_ush_flashParamHvApplyDurat)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_HV_APPLY_P, flashParamHvApplyPacks)) {
+  if( flashEE_save_short( ADDR_HV_APPLY_P, gl_ush_flashParamHvApplyPacks)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
@@ -439,12 +441,12 @@ void save_params_p2( void) {
 void save_params_p3( void) {
 #ifdef DEBUG
   printf("DBG: save_params_p3(): params to be saved are:\n");
-  printf("DBG:   Sign coeff:     0x%04x (%04d)\n", flashParamSignCoeff, flashParamSignCoeff); //Знаковый коэффициент
-  printf("DBG:   Serial number:  0x%04x (%04d)\n", flashParamDeviceId, flashParamDeviceId);   //серийный номер
-  printf("DBG:   Organization:   '%s'\n", flashParamOrg);                                     //организация
-  printf("DBG:   Year:           0x%04x (%04d)\n", flashParamDateYear, flashParamDateYear);   //год
-  printf("DBG:   Month:          0x%04x (%04d)\n", flashParamDateMonth, flashParamDateMonth); //месяц
-  printf("DBG:   Day:            0x%04x (%04d)\n", flashParamDateDay, flashParamDateDay);     //день
+  printf("DBG:   Sign coeff:     0x%04x (%04d)\n", gl_ush_flashParamSignCoeff,  gl_ush_flashParamSignCoeff);  //Знаковый коэффициент
+  printf("DBG:   Serial number:  0x%04x (%04d)\n", gl_ush_flashParamDeviceId,   gl_ush_flashParamDeviceId);   //серийный номер
+  printf("DBG:   Organization:   '%s'\n", gl_ac_flashParamOrg);                                               //организация
+  printf("DBG:   Year:           0x%04x (%04d)\n", gl_ush_flashParamDateYear,   gl_ush_flashParamDateYear);   //год
+  printf("DBG:   Month:          0x%04x (%04d)\n", gl_ush_flashParamDateMonth,  gl_ush_flashParamDateMonth);  //месяц
+  printf("DBG:   Day:            0x%04x (%04d)\n", gl_ush_flashParamDateDay,    gl_ush_flashParamDateDay);    //день
 #endif
 
   if( flashEE_erase_page( ADDR_PAGE3)) {
@@ -452,27 +454,27 @@ void save_params_p3( void) {
     return;
   }
 
-  if( flashEE_save_short( ADDR_SIGN_COEFF, flashParamSignCoeff)) {
+  if( flashEE_save_short( ADDR_SIGN_COEFF, gl_ush_flashParamSignCoeff)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_DEVICE_ID, flashParamDeviceId)) {
+  if( flashEE_save_short( ADDR_DEVICE_ID, gl_ush_flashParamDeviceId)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_DATE_Y, flashParamDateYear)) {
+  if( flashEE_save_short( ADDR_DATE_Y, gl_ush_flashParamDateYear)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_DATE_M, flashParamDateMonth)) {
+  if( flashEE_save_short( ADDR_DATE_M, gl_ush_flashParamDateMonth)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_DATE_D, flashParamDateDay)) {
+  if( flashEE_save_short( ADDR_DATE_D, gl_ush_flashParamDateDay)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_text( ADDR_ORG, flashParamOrg, 16)) {
+  if( flashEE_save_text( ADDR_ORG, gl_ac_flashParamOrg, 16)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
@@ -483,35 +485,35 @@ void save_params_p4( void) {
   printf("DBG: save_params_p4(): params to be saved are:\n");
 #endif
 
-  if( flashEE_save_short( ADDR_TCALIB_T1, flashParam_calibT1)) {
+  if( flashEE_save_short( ADDR_TCALIB_T1, gl_ush_flashParam_calibT1)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T1_TD1, flashParamT1_TD1_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T1_TD1, gl_ush_flashParamT1_TD1_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T1_TD2, flashParamT1_TD2_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T1_TD2, gl_ush_flashParamT1_TD2_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T1_TD3, flashParamT1_TD3_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T1_TD3, gl_ush_flashParamT1_TD3_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T2, flashParam_calibT2)) {
+  if( flashEE_save_short( ADDR_TCALIB_T2, gl_ush_flashParam_calibT2)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T2_TD1, flashParamT2_TD1_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T2_TD1, gl_ush_flashParamT2_TD1_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T2_TD2, flashParamT2_TD2_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T2_TD2, gl_ush_flashParamT2_TD2_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
-  if( flashEE_save_short( ADDR_TCALIB_T2_TD3, flashParamT2_TD3_val)) {
+  if( flashEE_save_short( ADDR_TCALIB_T2_TD3, gl_ush_flashParamT2_TD3_val)) {
     gl_c_EmergencyCode = ERROR_FLASH_SAVE_PARAMS_FAIL;
     return;
   }
