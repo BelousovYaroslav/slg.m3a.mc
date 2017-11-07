@@ -63,8 +63,8 @@ unsigned short  gl_ush_flashParamT2_TD1_val, gl_ush_flashParamT2_TD2_val, gl_ush
 char gl_c_EmergencyCode = 0;    //код ошибки прибора
 
 #define IN_COMMAND_BUF_LEN 4                //длина буфера входящих команд
-char input_buffer[6] = { 0, 0, 0, 0, 0, 0}; //буфер входящих команд
-char pos_in_in_buf = 0;                     //позиция записи в буфере входящих команд
+char gl_acInput_buffer[6] = { 0, 0, 0, 0, 0, 0}; //буфер входящих команд
+char gl_cPos_in_in_buf = 0;                     //позиция записи в буфере входящих команд
 
 
 signed short gl_ssh_SA_time = 0;        //вычисление периода такта.период SA/TA
@@ -104,18 +104,18 @@ unsigned int gl_un_RULAControl = 3276;      //3276 = 2.000 V
 unsigned int nDelta = ( RULA_MAX - RULA_MIN) / 4;
 
 //Система стабилизации амплитуды
-int gl_snMeaningCounter = 0;              //счётчик средних
-int gl_snMeaningCounterRound = 128;       //статистика среднего
-int gl_snMeaningShift = 7;                //степень - насколько сдвигать сумму (log2 от gl_snMeaningCounterRound)
-long gl_lnMeaningSumm = 0;                //сумма амплитуд
-long gl_lnMeanImps = 0;                   //средняя амплитуда (в импульсах интерф. картинки)
-int gl_nActiveRegulationT2 = 0;           //отсечка таймера для сброса флага активной регулировки амплитуды, он же флаг включенного состояния
+int   gl_snMeaningCounter = 0;              //счётчик средних
+int   gl_snMeaningCounterRound = 128;       //статистика среднего
+int   gl_snMeaningShift = 7;                //степень - насколько сдвигать сумму (log2 от gl_snMeaningCounterRound)
+long  gl_lnMeaningSumm = 0;                //сумма амплитуд
+long  gl_lnMeanImps = 0;                   //средняя амплитуда (в импульсах интерф. картинки)
+int   gl_nActiveRegulationT2 = 0;           //отсечка таймера для сброса флага активной регулировки амплитуды, он же флаг включенного состояния
 
 //засечка таймера для события "через X сек после запуска"
-int gl_nT2StartDataOut;
+int   gl_nT2StartDataOut;
 
 //засечка таймера для события окончания сигнала сброса периметра
-int gl_nRppTimer = 0;
+int   gl_nRppTimer = 0;
 
 //ФЛАГИ
 char gl_b_SyncMode = 0;               //флаг режима работы гироскопа:   0=синхр. 1=асинхр.
@@ -154,9 +154,9 @@ int ADCChannel = 0;           //читаемый канал АЦП
 #define BIT_7 128
 
 //число включений HV при поджиге
-unsigned short nFiringTry = 0;
+unsigned short gl_ushFiringTry = 0;
 
-char cCalibProcessState;
+char gl_cCalibProcessState;
 
 char bCalibrated;
 double TD1_K, TD1_B;
@@ -174,8 +174,8 @@ void FIQ_Handler (void) __fiq
 {
   char tmp;
   if( ( FIQSTA & UART_BIT) != 0) {
-    if( pos_in_in_buf < IN_COMMAND_BUF_LEN)
-      input_buffer[ pos_in_in_buf++] = COMRX;
+    if( gl_cPos_in_in_buf < IN_COMMAND_BUF_LEN)
+      gl_acInput_buffer[ gl_cPos_in_in_buf++] = COMRX;
     else
       tmp = COMRX;
     //GP0DAT = ( 1 << 16);
@@ -1023,11 +1023,11 @@ void main() {
   int nRpcResetCounter = 0;
   int nRpcSumm = 0;
 
-  cCalibProcessState = 0;    //0 - no calibration
-                             //1 - processing min_t_point 1st thermo
-                             //2 - processing min_t_point 2nd thermo
-                             //3 - processing max_t_point 1st thermo
-                             //4 - processing max_t_point 2nd thermo
+  gl_cCalibProcessState = 0;    //0 - no calibration
+                                //1 - processing min_t_point 1st thermo
+                                //2 - processing min_t_point 2nd thermo
+                                //3 - processing max_t_point 1st thermo
+                                //4 - processing max_t_point 2nd thermo
 
   // Setup tx & rx pins on P1.0 and P1.1
   GP0CON = 0x00;
@@ -1509,7 +1509,7 @@ void main() {
   #endif
 #else
 
-  nFiringTry = 0;
+  gl_ushFiringTry = 0;
 
   #ifdef DEBUG
     printf("DBG: Turning on HV\n");
@@ -1545,7 +1545,7 @@ void main() {
         ( ( double) gl_ssh_current_2 / 4095. * 3. / 3.973 < ( double) gl_ush_flashParamI2min / 65535. * 0.75)) {*/
 
     #ifdef DEBUG
-      printf("DBG: try %d\n", nFiringTry);
+      printf("DBG: try %d\n", gl_ushFiringTry);
       printf("DBG: I1: Measured: %.02f  Goal: %.02f\n", ( 2.5 - ( double) gl_ssh_current_1 / 4095. * 3.) / 2.5, ( double) gl_ush_flashParamI1min / 65535. * 0.75);
       printf("DBG: I2: Measured: %.02f  Goal: %.02f\n", ( 2.5 - ( double) gl_ssh_current_2 / 4095. * 3.) / 2.5, ( double) gl_ush_flashParamI2min / 65535. * 0.75);
     #endif
@@ -1554,9 +1554,9 @@ void main() {
         ( ( 2.5 - ( double) gl_ssh_current_2 / 4095. * 3.) / 2.5 < ( double) gl_ush_flashParamI2min / 65535. * 0.75)) {
       //не зажглось
 
-      if( nFiringTry < gl_ush_flashParamHvApplyCount * gl_ush_flashParamHvApplyPacks) {
+      if( gl_ushFiringTry < gl_ush_flashParamHvApplyCount * gl_ush_flashParamHvApplyPacks) {
 
-        if( nFiringTry > 0 && ( nFiringTry % gl_ush_flashParamHvApplyCount) == 0) {
+        if( gl_ushFiringTry > 0 && ( gl_ushFiringTry % gl_ush_flashParamHvApplyCount) == 0) {
 
 #ifdef DEBUG
   printf( "DBG: Relax pause 1 sec\n");
@@ -1596,7 +1596,7 @@ void main() {
         pause( 16384);
 
         //увеличиваем число попыток
-        nFiringTry++;
+        gl_ushFiringTry++;
       }
       else {
 
@@ -2084,13 +2084,13 @@ void main() {
           case 7: gl_ssh_ampl_angle = (ADCDAT >> 16); break;                      //ADC8 = AmplAng
         }
 
-        if( cCalibProcessState) {
-          switch( cCalibProcessState) {
+        if( gl_cCalibProcessState) {
+          switch( gl_cCalibProcessState) {
             case 1:
               //калибруем первый датчик на минимальной температуре
               if( ADCChannel == 0) {
                 gl_ush_flashParamT1_TD1_val = gl_ssh_Utd1_cal;
-                cCalibProcessState = 2;
+                gl_cCalibProcessState = 2;
               }
             break;
 
@@ -2098,7 +2098,7 @@ void main() {
               //калибруем второй датчик на минимальной температуре
               if( ADCChannel == 1) {
                 gl_ush_flashParamT1_TD2_val = gl_ssh_Utd2_cal;
-                cCalibProcessState = 3;
+                gl_cCalibProcessState = 3;
               }
             break;
 
@@ -2106,7 +2106,7 @@ void main() {
               //калибруем третий датчик на минимальной температуре
               if( ADCChannel == 2) {
                 gl_ush_flashParamT1_TD3_val = gl_ssh_Utd3_cal;
-                cCalibProcessState = 0;
+                gl_cCalibProcessState = 0;
                 save_params_p4();
                 gl_nSentPackIndex = CALIB_T1;
               }
@@ -2116,7 +2116,7 @@ void main() {
               //калибруем первый датчик на максимальной температуре
               if( ADCChannel == 0) {
                 gl_ush_flashParamT2_TD1_val = gl_ssh_Utd1_cal;
-                cCalibProcessState = 5;
+                gl_cCalibProcessState = 5;
               }
             break;
 
@@ -2124,7 +2124,7 @@ void main() {
               //калибруем второй датчик на максимальной температуре
               if( ADCChannel == 1) {
                 gl_ush_flashParamT2_TD2_val = gl_ssh_Utd2_cal;
-                cCalibProcessState = 6;
+                gl_cCalibProcessState = 6;
               }
             break;
 
@@ -2132,14 +2132,14 @@ void main() {
               //калибруем третий датчик на максимальной температуре
               if( ADCChannel == 2) {
                 gl_ush_flashParamT2_TD3_val = gl_ssh_Utd3_cal;
-                cCalibProcessState = 0;
+                gl_cCalibProcessState = 0;
                 save_params_p4();
                 gl_nSentPackIndex = CALIB_T1;
               }
             break;
           }
 
-          if( !cCalibProcessState)
+          if( !gl_cCalibProcessState)
             //если это закончилась калбировка какой либо точки - перерасчитаем калибровочные параметры
             ThermoCalibrationCalculation();
         }
@@ -2229,7 +2229,7 @@ void main() {
             case CONTROL_AA:      send_pack( gl_ush_flashParamAmplAngMin1);     gl_nSentPackIndex = UTD1;       break;  //flashParamAmplAngMin1
 
             case HV_APPLY_COUNT_SET: send_pack( gl_ush_flashParamHvApplyCount); gl_nSentPackIndex = UTD1;       break;  //HV apply cycles in pack
-            case HV_APPLY_COUNT_TR:  send_pack( nFiringTry);                    gl_nSentPackIndex = UTD1;       break;  //HV apply cycles applied in this run
+            case HV_APPLY_COUNT_TR:  send_pack( gl_ushFiringTry);               gl_nSentPackIndex = UTD1;       break;  //HV apply cycles applied in this run
             case HV_APPLY_DURAT_SET: send_pack( gl_ush_flashParamHvApplyDurat); gl_nSentPackIndex = UTD1;       break;  //HV apply cycle duration
             case HV_APPLY_PACKS:     send_pack( gl_ush_flashParamHvApplyPacks); gl_nSentPackIndex = UTD1;       break;  //HV apply packs
 

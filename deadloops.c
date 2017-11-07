@@ -18,8 +18,8 @@ extern signed short gl_ssh_angle_inc_prev;
 extern short gl_nSentPackIndex;
 
 #define IN_COMMAND_BUF_LEN 3
-extern char pos_in_in_buf;
-extern char input_buffer[];
+extern char gl_cPos_in_in_buf;
+extern char gl_acInput_buffer[];
 
 //flash-stored params declared in Main.c
 extern unsigned short gl_ush_flashParamAmplitudeCode;    //амплитуда колебания виброподвеса
@@ -40,7 +40,7 @@ extern unsigned short gl_ush_flashParamDateMonth;        //дата прибора.месяц
 extern unsigned short gl_ush_flashParamDateDay;          //дата прибора.день
 extern char gl_ac_flashParamOrg[];                       //название организации
 
-extern unsigned short nFiringTry;                 //число включений HV при поджиге
+extern unsigned short gl_ushFiringTry;                 //число включений HV при поджиге
 
 //implemented in Main.c
 extern void send_pack( short analog_param);
@@ -314,7 +314,7 @@ void deadloop_no_tact( int nError) {
     gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( gl_ush_flashParamHvApplyCount);
     gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( gl_ush_flashParamHvApplyDurat);
     gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( gl_ush_flashParamHvApplyPacks);
-    gl_nSentPackIndex = HV_APPLY_COUNT_TR;  send_pack( nFiringTry);
+    gl_nSentPackIndex = HV_APPLY_COUNT_TR;  send_pack( gl_ushFiringTry);
     gl_nSentPackIndex = SIGNCOEFF;    send_pack( gl_ush_flashParamSignCoeff);
     gl_nSentPackIndex = DEVNUM;       send_pack( gl_ush_flashParamDeviceId);
     gl_nSentPackIndex = DATE_Y;       send_pack( gl_ush_flashParamDateYear);

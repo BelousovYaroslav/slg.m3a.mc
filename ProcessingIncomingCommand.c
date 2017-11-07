@@ -7,8 +7,8 @@
 #include "debug.h"
 
 //declared in Main.c
-extern char pos_in_in_buf;
-extern char input_buffer[];
+extern char gl_cPos_in_in_buf;
+extern char gl_acInput_buffer[];
 
 extern char gl_c_EmergencyCode;         //Device error code
 
@@ -25,7 +25,7 @@ extern char gl_chAngleOutput;           //флаг вывода приращения угла: 0 = dW (4
 extern char gl_b_SyncMode;              //флаг режима работы гироскопа:   0=синхр. 1=асинхр.
 extern char gl_bManualLaserOff;         //флаг что мы сами выключили ток лазера (командой). Флаг нужен чтобы исключить это событие в отслеживателе просадок тока.
 
-extern char cCalibProcessState;
+extern char gl_cCalibProcessState;
 extern char bCalibrated;
 
 
@@ -81,27 +81,27 @@ extern void DACConfiguration( void);
 void processIncomingCommand( void) {
   short in_param_temp;
 
-  if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
+  if( gl_cPos_in_in_buf == IN_COMMAND_BUF_LEN) {
 
 #ifdef DEBUG
   printf("Incoming command: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",
-              input_buffer[ 0], input_buffer[ 1], input_buffer[ 2],
-              input_buffer[ 3], input_buffer[ 4], input_buffer[ 5]);
+              gl_acInput_buffer[ 0], gl_acInput_buffer[ 1], gl_acInput_buffer[ 2],
+              gl_acInput_buffer[ 3], gl_acInput_buffer[ 4], gl_acInput_buffer[ 5]);
 
 #endif
     //LOCK прибора
     if( gl_chLockBit == 1) {
-      switch( input_buffer[ 0]) {
+      switch( gl_acInput_buffer[ 0]) {
         case MC_COMMAND_ACT_UNLOCK_DEVICE:
-          if( input_buffer[ 1] == 0x5A &&
-              input_buffer[ 2] == 0x55 &&
-              input_buffer[ 3] == 0x5A) {
+          if( gl_acInput_buffer[ 1] == 0x5A &&
+              gl_acInput_buffer[ 2] == 0x55 &&
+              gl_acInput_buffer[ 3] == 0x5A) {
                 gl_chLockBit = 0;
                 gl_ush_flashLockDev = 0;
           }
         break;
         case MC_COMMAND_REQ:
-          switch( input_buffer[ 1]) {
+          switch( gl_acInput_buffer[ 1]) {
             case VERSION:     gl_nSentPackIndex = VERSION;      break;
           }
         break;
@@ -111,16 +111,16 @@ void processIncomingCommand( void) {
 #endif
         break;
       }
-      pos_in_in_buf = 0;
+      gl_cPos_in_in_buf = 0;
       return;
     }
 
-    switch( input_buffer[0]) {
+    switch( gl_acInput_buffer[0]) {
 
       case MC_COMMAND_SET:
-        switch( input_buffer[1]) {
+        switch( gl_acInput_buffer[1]) {
           case AMPLITUDE:   //Set Amplitude of Hangreup Vibration
-            gl_ush_flashParamAmplitudeCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamAmplitudeCode = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = AMPLITUDE;
 
             /*
@@ -145,7 +145,7 @@ void processIncomingCommand( void) {
           break;
 
           case TACT_CODE:   //Set CodeTact
-            gl_ush_flashParamTactCode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamTactCode = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             configure_hanger();
             gl_nSentPackIndex = TACT_CODE;
 
@@ -155,7 +155,7 @@ void processIncomingCommand( void) {
           break;
 
           case M_COEFF: //Set NoiseCoefficient M
-            gl_ush_flashParamMCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamMCoeff = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             DACConfiguration();
             gl_nSentPackIndex = M_COEFF;
 
@@ -165,7 +165,7 @@ void processIncomingCommand( void) {
           break;
 
           case STARTMODE: //Set StartMode
-            gl_ush_flashParamStartMode = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamStartMode = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             DACConfiguration();
             GP0DAT |= ( 1 << (16 + 5));   //RP_P   (p0.5) = 1
 
@@ -176,110 +176,110 @@ void processIncomingCommand( void) {
           break;
 
           case DECCOEFF: //Set decrement coeff
-            gl_ush_flashParamDecCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamDecCoeff = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = DECCOEFF;
           break;
 
           case CONTROL_I1:  //Set control_i1
-            gl_ush_flashParamI1min = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamI1min = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = CONTROL_I1;
           break;
 
           case CONTROL_I2:  //Set control_i2
-            gl_ush_flashParamI2min = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamI2min = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = CONTROL_I2;
           break;
 
           case CONTROL_AA:  //Set control_aa
-            gl_ush_flashParamAmplAngMin1 = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamAmplAngMin1 = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = CONTROL_AA;
           break;
 
           case HV_APPLY_COUNT_SET:  //Set HV_applies_count
-            gl_ush_flashParamHvApplyCount = input_buffer[2];
+            gl_ush_flashParamHvApplyCount = gl_acInput_buffer[2];
             gl_nSentPackIndex = HV_APPLY_COUNT_SET;
           break;
 
           case HV_APPLY_DURAT_SET:  //Set HV_applies_duration
-            gl_ush_flashParamHvApplyDurat = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamHvApplyDurat = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = HV_APPLY_DURAT_SET;
           break;
 
           case HV_APPLY_PACKS:   //Set HV_applies_packs
-            gl_ush_flashParamHvApplyPacks = input_buffer[2];
+            gl_ush_flashParamHvApplyPacks = gl_acInput_buffer[2];
             gl_nSentPackIndex = HV_APPLY_PACKS;
           break;
 
           case SIGNCOEFF:  //Set sign coeff
-            gl_ush_flashParamSignCoeff = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamSignCoeff = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = SIGNCOEFF;
           break;
 
           case DEVNUM:    //Set device
-            gl_ush_flashParamDeviceId = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamDeviceId = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = DEVNUM;
           break;
 
           /*
           case DEVNUM_BH:  //Set device id high byte
             gl_ush_flashParamDeviceId &= ( 0xFF00);
-            gl_ush_flashParamDeviceId &= ( ( ( short) input_buffer[2]) << 8);
+            gl_ush_flashParamDeviceId &= ( ( ( short) gl_acInput_buffer[2]) << 8);
             gl_nSentPackIndex = DEVNUM_BH;
           break;
           */
 
           case DATE_Y:    //Set Date.YEAR
-            gl_ush_flashParamDateYear = input_buffer[2] + ( ( ( short) input_buffer[3]) << 8);
+            gl_ush_flashParamDateYear = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
             gl_nSentPackIndex = DATE_Y;
           break;
 
           case DATE_M:    //Set Date.MONTH
-            gl_ush_flashParamDateMonth = input_buffer[2];
+            gl_ush_flashParamDateMonth = gl_acInput_buffer[2];
             gl_nSentPackIndex = DATE_Y;
           break;
 
           case DATE_D:    //Set Date.DAY
-            gl_ush_flashParamDateDay = input_buffer[2];
+            gl_ush_flashParamDateDay = gl_acInput_buffer[2];
             gl_nSentPackIndex = DATE_Y;
           break;
 
           case ORG_B1:    //установить Organization.byte1
-            gl_ac_flashParamOrg[0] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[0] = gl_acInput_buffer[2];  break;
           case ORG_B2:    //установить Organization.byte2
-            gl_ac_flashParamOrg[1] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[1] = gl_acInput_buffer[2];  break;
           case ORG_B3:    //установить Organization.byte3
-            gl_ac_flashParamOrg[2] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[2] = gl_acInput_buffer[2];  break;
           case ORG_B4:    //установить Organization.byte4
-            gl_ac_flashParamOrg[3] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[3] = gl_acInput_buffer[2];  break;
           case ORG_B5:    //установить Organization.byte5
-            gl_ac_flashParamOrg[4] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[4] = gl_acInput_buffer[2];  break;
           case ORG_B6:    //установить Organization.byte6
-            gl_ac_flashParamOrg[5] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[5] = gl_acInput_buffer[2];  break;
           case ORG_B7:    //установить Organization.byte7
-            gl_ac_flashParamOrg[6] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[6] = gl_acInput_buffer[2];  break;
           case ORG_B8:    //установить Organization.byte8
-            gl_ac_flashParamOrg[7] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[7] = gl_acInput_buffer[2];  break;
           case ORG_B9:    //установить Organization.byte9
-            gl_ac_flashParamOrg[8] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[8] = gl_acInput_buffer[2];  break;
           case ORG_B10:   //установить Organization.byte10
-            gl_ac_flashParamOrg[9] = input_buffer[2];  break;
+            gl_ac_flashParamOrg[9] = gl_acInput_buffer[2];  break;
           case ORG_B11:   //установить Organization.byte11
-            gl_ac_flashParamOrg[10] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[10] = gl_acInput_buffer[2]; break;
           case ORG_B12:   //установить Organization.byte12
-            gl_ac_flashParamOrg[11] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[11] = gl_acInput_buffer[2]; break;
           case ORG_B13:   //установить Organization.byte13
-            gl_ac_flashParamOrg[12] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[12] = gl_acInput_buffer[2]; break;
           case ORG_B14:   //установить Organization.byte14
-            gl_ac_flashParamOrg[13] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[13] = gl_acInput_buffer[2]; break;
           case ORG_B15:   //установить Organization.byte15
-            gl_ac_flashParamOrg[14] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[14] = gl_acInput_buffer[2]; break;
           case ORG_B16:   //установить Organization.byte16
-            gl_ac_flashParamOrg[15] = input_buffer[2]; break;
+            gl_ac_flashParamOrg[15] = gl_acInput_buffer[2]; break;
         }
       break;
 
       case MC_COMMAND_REQ:
-        switch( input_buffer[1]) {
+        switch( gl_acInput_buffer[1]) {
           case AMPLITUDE:   gl_nSentPackIndex = AMPLITUDE;    break;
           case TACT_CODE:   gl_nSentPackIndex = TACT_CODE;    break;
           case M_COEFF:     gl_nSentPackIndex = M_COEFF;      break;
@@ -311,14 +311,14 @@ void processIncomingCommand( void) {
 
       case MC_COMMAND_ACT_SWC_DW_DNDU_OUTPUT: //Within async mode switch DN,DU or dW output
         if( gl_b_SyncMode == 1) {
-          if( input_buffer[1] == 0) gl_chAngleOutput = 0; //switch to dW output
-          if( input_buffer[1] == 1) gl_chAngleOutput = 1; //switch to dNdU output
+          if( gl_acInput_buffer[1] == 0) gl_chAngleOutput = 0; //switch to dW output
+          if( gl_acInput_buffer[1] == 1) gl_chAngleOutput = 1; //switch to dNdU output
         }
       break;
 
       case MC_COMMAND_ACT_T_CALIBRATION: //Thermo calibration (parameter here is current temperature)
         bCalibrated = 0;
-        in_param_temp  = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+        in_param_temp  = gl_acInput_buffer[1] + ( ( ( short) gl_acInput_buffer[2]) << 8);
         if( gl_ush_flashParam_calibT1 >= ( THERMO_CALIB_PARAMS_BASE + MIN_T_THERMO_CALIBRATION) && 
             gl_ush_flashParam_calibT1 <= ( THERMO_CALIB_PARAMS_BASE + MAX_T_THERMO_CALIBRATION)) {
             //у нас есть нормальная минимальная точка калибровки
@@ -335,18 +335,18 @@ void processIncomingCommand( void) {
               //определим какую надо заменить
               if( in_param_temp < gl_ush_flashParam_calibT1) {
                 //надо заменить минимальную
-                cCalibProcessState = 1;
+                gl_cCalibProcessState = 1;
                 gl_ush_flashParam_calibT1 = in_param_temp;
               }
               else {
                 //надо заменить максимальную
-                cCalibProcessState = 4;
+                gl_cCalibProcessState = 4;
                 gl_ush_flashParam_calibT2 = in_param_temp;
               }
             }
             else {
               //у нас есть нормальная минимальная точка калибровки, но нет нормальной максимальной
-              cCalibProcessState = 3;
+              gl_cCalibProcessState = 3;
               gl_ush_flashParam_calibT2 = in_param_temp;
             }
 
@@ -354,7 +354,7 @@ void processIncomingCommand( void) {
         else {
           //у нас нет даже минимальной точки!! значит это будет минимальная :)
           gl_ush_flashParam_calibT1 = in_param_temp;
-          cCalibProcessState = 1;
+          gl_cCalibProcessState = 1;
         }
       break;
 
@@ -402,7 +402,7 @@ void processIncomingCommand( void) {
       break;
 
       case MC_COMMAND_ACT_SAVE_FLASH_PARAMS:
-        switch( input_buffer[1]) {
+        switch( gl_acInput_buffer[1]) {
           case 0: save_params_p1(); break;
           case 1: save_params_p2(); break;
           case 2: save_params_p3(); break;
@@ -411,7 +411,7 @@ void processIncomingCommand( void) {
       break;
 
       case MC_COMMAND_ACT_RELOAD_FLASH_PARAMS:
-        switch( input_buffer[1]) {
+        switch( gl_acInput_buffer[1]) {
           case 0: load_params_p1(); check_params_p1(); break;
           case 1: load_params_p2(); check_params_p2(); break;
           case 2: load_params_p3(); check_params_p3(); break;
@@ -421,9 +421,9 @@ void processIncomingCommand( void) {
       break;
 
       case MC_COMMAND_ACT_LOCK_DEVICE:
-        if( input_buffer[1] == 0x55 &&
-            input_buffer[2] == 0x5A &&
-            input_buffer[3] == 0x55) {
+        if( gl_acInput_buffer[1] == 0x55 &&
+            gl_acInput_buffer[2] == 0x5A &&
+            gl_acInput_buffer[3] == 0x55) {
 #ifdef DEBUG
   printf("DBG: After saving page0 device will be locked\n");
 #endif
@@ -437,6 +437,6 @@ void processIncomingCommand( void) {
         }
       break;
     }
-    pos_in_in_buf = 0;
+    gl_cPos_in_in_buf = 0;
   }
 }
