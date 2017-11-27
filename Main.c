@@ -11,6 +11,9 @@
 #include "AnalogueParamsConstList.h"
 #include "debug.h"
 
+#define RULA_MAX 4090
+#define RULA_MIN 25
+
 extern void processIncomingCommand();
 
 //********************
