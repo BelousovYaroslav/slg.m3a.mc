@@ -60,16 +60,16 @@ void deadloop_no_firing( int nError) {
   gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
   //выдача данных
-    gl_nSentPackIndex = AMPLITUDE;  send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;  send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;    send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;  send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = CONTROL_I1; send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2; send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA; send_pack( gl_ush_flashParamAmplAngMin1);
-    gl_nSentPackIndex = DECCOEFF;   send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = SIGNCOEFF;  send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = AMPLITUDE;        send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;        send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;          send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;        send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = CONTROL_I1;       send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;       send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;       send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = DECCOEFF_CURRENT; send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = SIGNCOEFF;        send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = VERSION;          send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   gl_n_prT1VAL = T1VAL;
   while( 1) {
@@ -85,39 +85,39 @@ void deadloop_no_firing( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = CONTROL_I1;   send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2;   send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA;   send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = AMPLITUDE;          send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;          send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;            send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;          send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF_CURRENT;   send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;         send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;         send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;         send_pack( gl_ush_flashParamAmplAngMin1);
     gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( gl_ush_flashParamHvApplyCount);
     gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( gl_ush_flashParamHvApplyDurat);
     gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( gl_ush_flashParamHvApplyPacks);
-    gl_nSentPackIndex = SIGNCOEFF;    send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = DEVNUM;       send_pack( gl_ush_flashParamDeviceId);
-    gl_nSentPackIndex = DATE_Y;       send_pack( gl_ush_flashParamDateYear);
-    gl_nSentPackIndex = DATE_M;       send_pack( gl_ush_flashParamDateMonth);
-    gl_nSentPackIndex = DATE_D;       send_pack( gl_ush_flashParamDateDay);
-    gl_nSentPackIndex = ORG_B1;       send_pack( gl_ac_flashParamOrg[ 0]);
-    gl_nSentPackIndex = ORG_B2;       send_pack( gl_ac_flashParamOrg[ 1]);
-    gl_nSentPackIndex = ORG_B3;       send_pack( gl_ac_flashParamOrg[ 2]);
-    gl_nSentPackIndex = ORG_B4;       send_pack( gl_ac_flashParamOrg[ 3]);
-    gl_nSentPackIndex = ORG_B5;       send_pack( gl_ac_flashParamOrg[ 4]);
-    gl_nSentPackIndex = ORG_B6;       send_pack( gl_ac_flashParamOrg[ 5]);
-    gl_nSentPackIndex = ORG_B7;       send_pack( gl_ac_flashParamOrg[ 6]);
-    gl_nSentPackIndex = ORG_B8;       send_pack( gl_ac_flashParamOrg[ 7]);
-    gl_nSentPackIndex = ORG_B9;       send_pack( gl_ac_flashParamOrg[ 8]);
-    gl_nSentPackIndex = ORG_B10;      send_pack( gl_ac_flashParamOrg[ 9]);
-    gl_nSentPackIndex = ORG_B11;      send_pack( gl_ac_flashParamOrg[ 10]);
-    gl_nSentPackIndex = ORG_B12;      send_pack( gl_ac_flashParamOrg[ 11]);
-    gl_nSentPackIndex = ORG_B13;      send_pack( gl_ac_flashParamOrg[ 12]);
-    gl_nSentPackIndex = ORG_B14;      send_pack( gl_ac_flashParamOrg[ 13]);
-    gl_nSentPackIndex = ORG_B15;      send_pack( gl_ac_flashParamOrg[ 14]);
-    gl_nSentPackIndex = ORG_B16;      send_pack( gl_ac_flashParamOrg[ 15]);
-    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = SIGNCOEFF;          send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;             send_pack( gl_ush_flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;             send_pack( gl_ush_flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;             send_pack( gl_ush_flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;             send_pack( gl_ush_flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;             send_pack( gl_ac_flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;             send_pack( gl_ac_flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;             send_pack( gl_ac_flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;             send_pack( gl_ac_flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;             send_pack( gl_ac_flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;             send_pack( gl_ac_flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;             send_pack( gl_ac_flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;             send_pack( gl_ac_flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;             send_pack( gl_ac_flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;            send_pack( gl_ac_flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;            send_pack( gl_ac_flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;            send_pack( gl_ac_flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;            send_pack( gl_ac_flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;            send_pack( gl_ac_flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;            send_pack( gl_ac_flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;            send_pack( gl_ac_flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;            send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   } //"мертвый" while
 }
@@ -135,16 +135,16 @@ void deadloop_current_unstable( int nError) {
   gl_ssh_angle_inc = gl_ssh_angle_inc_prev = 0;
 
   //выдача данных
-    gl_nSentPackIndex = AMPLITUDE;  send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;  send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;    send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;  send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = CONTROL_I1; send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2; send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA; send_pack( gl_ush_flashParamAmplAngMin1);
-    gl_nSentPackIndex = DECCOEFF;   send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = SIGNCOEFF;  send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = VERSION;    send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = AMPLITUDE;          send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;          send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;            send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;          send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = CONTROL_I1;         send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;         send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;         send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = DECCOEFF_CURRENT;   send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = SIGNCOEFF;          send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = VERSION;            send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   gl_n_prT1VAL = T1VAL;
   while( 1) {
@@ -160,39 +160,39 @@ void deadloop_current_unstable( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = CONTROL_I1;   send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2;   send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA;   send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = AMPLITUDE;          send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;          send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;            send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;          send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF_CURRENT;   send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;         send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;         send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;         send_pack( gl_ush_flashParamAmplAngMin1);
     gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( gl_ush_flashParamHvApplyCount);
     gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( gl_ush_flashParamHvApplyDurat);
     gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( gl_ush_flashParamHvApplyPacks);
-    gl_nSentPackIndex = SIGNCOEFF;    send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = DEVNUM;       send_pack( gl_ush_flashParamDeviceId);
-    gl_nSentPackIndex = DATE_Y;       send_pack( gl_ush_flashParamDateYear);
-    gl_nSentPackIndex = DATE_M;       send_pack( gl_ush_flashParamDateMonth);
-    gl_nSentPackIndex = DATE_D;       send_pack( gl_ush_flashParamDateDay);
-    gl_nSentPackIndex = ORG_B1;       send_pack( gl_ac_flashParamOrg[ 0]);
-    gl_nSentPackIndex = ORG_B2;       send_pack( gl_ac_flashParamOrg[ 1]);
-    gl_nSentPackIndex = ORG_B3;       send_pack( gl_ac_flashParamOrg[ 2]);
-    gl_nSentPackIndex = ORG_B4;       send_pack( gl_ac_flashParamOrg[ 3]);
-    gl_nSentPackIndex = ORG_B5;       send_pack( gl_ac_flashParamOrg[ 4]);
-    gl_nSentPackIndex = ORG_B6;       send_pack( gl_ac_flashParamOrg[ 5]);
-    gl_nSentPackIndex = ORG_B7;       send_pack( gl_ac_flashParamOrg[ 6]);
-    gl_nSentPackIndex = ORG_B8;       send_pack( gl_ac_flashParamOrg[ 7]);
-    gl_nSentPackIndex = ORG_B9;       send_pack( gl_ac_flashParamOrg[ 8]);
-    gl_nSentPackIndex = ORG_B10;      send_pack( gl_ac_flashParamOrg[ 9]);
-    gl_nSentPackIndex = ORG_B11;      send_pack( gl_ac_flashParamOrg[ 10]);
-    gl_nSentPackIndex = ORG_B12;      send_pack( gl_ac_flashParamOrg[ 11]);
-    gl_nSentPackIndex = ORG_B13;      send_pack( gl_ac_flashParamOrg[ 12]);
-    gl_nSentPackIndex = ORG_B14;      send_pack( gl_ac_flashParamOrg[ 13]);
-    gl_nSentPackIndex = ORG_B15;      send_pack( gl_ac_flashParamOrg[ 14]);
-    gl_nSentPackIndex = ORG_B16;      send_pack( gl_ac_flashParamOrg[ 15]);
-    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = SIGNCOEFF;          send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;             send_pack( gl_ush_flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;             send_pack( gl_ush_flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;             send_pack( gl_ush_flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;             send_pack( gl_ush_flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;             send_pack( gl_ac_flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;             send_pack( gl_ac_flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;             send_pack( gl_ac_flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;             send_pack( gl_ac_flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;             send_pack( gl_ac_flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;             send_pack( gl_ac_flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;             send_pack( gl_ac_flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;             send_pack( gl_ac_flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;             send_pack( gl_ac_flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;            send_pack( gl_ac_flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;            send_pack( gl_ac_flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;            send_pack( gl_ac_flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;            send_pack( gl_ac_flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;            send_pack( gl_ac_flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;            send_pack( gl_ac_flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;            send_pack( gl_ac_flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;            send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   } //"мертвый" while
 }
@@ -240,40 +240,40 @@ void deadloop_no_hangerup( void) {
     processIncomingCommand();
 
     //выдача данных
-    gl_nSentPackIndex = AMPLANG_DUS;  send_pack( gl_ssh_ampl_angle);
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = CONTROL_I1;   send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2;   send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA;   send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = AMPLANG_DUS;        send_pack( gl_ssh_ampl_angle);
+    gl_nSentPackIndex = AMPLITUDE;          send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;          send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;            send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;          send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF_CURRENT;   send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;         send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;         send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;         send_pack( gl_ush_flashParamAmplAngMin1);
     gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( gl_ush_flashParamHvApplyCount);
     gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( gl_ush_flashParamHvApplyDurat);
     gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( gl_ush_flashParamHvApplyPacks);
-    gl_nSentPackIndex = SIGNCOEFF;    send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = DEVNUM;       send_pack( gl_ush_flashParamDeviceId);
-    gl_nSentPackIndex = DATE_Y;       send_pack( gl_ush_flashParamDateYear);
-    gl_nSentPackIndex = DATE_M;       send_pack( gl_ush_flashParamDateMonth);
-    gl_nSentPackIndex = DATE_D;       send_pack( gl_ush_flashParamDateDay);
-    gl_nSentPackIndex = ORG_B1;       send_pack( gl_ac_flashParamOrg[ 0]);
-    gl_nSentPackIndex = ORG_B2;       send_pack( gl_ac_flashParamOrg[ 1]);
-    gl_nSentPackIndex = ORG_B3;       send_pack( gl_ac_flashParamOrg[ 2]);
-    gl_nSentPackIndex = ORG_B4;       send_pack( gl_ac_flashParamOrg[ 3]);
-    gl_nSentPackIndex = ORG_B5;       send_pack( gl_ac_flashParamOrg[ 4]);
-    gl_nSentPackIndex = ORG_B6;       send_pack( gl_ac_flashParamOrg[ 5]);
-    gl_nSentPackIndex = ORG_B7;       send_pack( gl_ac_flashParamOrg[ 6]);
-    gl_nSentPackIndex = ORG_B8;       send_pack( gl_ac_flashParamOrg[ 7]);
-    gl_nSentPackIndex = ORG_B9;       send_pack( gl_ac_flashParamOrg[ 8]);
-    gl_nSentPackIndex = ORG_B10;      send_pack( gl_ac_flashParamOrg[ 9]);
-    gl_nSentPackIndex = ORG_B11;      send_pack( gl_ac_flashParamOrg[ 10]);
-    gl_nSentPackIndex = ORG_B12;      send_pack( gl_ac_flashParamOrg[ 11]);
-    gl_nSentPackIndex = ORG_B13;      send_pack( gl_ac_flashParamOrg[ 12]);
-    gl_nSentPackIndex = ORG_B14;      send_pack( gl_ac_flashParamOrg[ 13]);
-    gl_nSentPackIndex = ORG_B15;      send_pack( gl_ac_flashParamOrg[ 14]);
-    gl_nSentPackIndex = ORG_B16;      send_pack( gl_ac_flashParamOrg[ 15]);
-    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = SIGNCOEFF;          send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;             send_pack( gl_ush_flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;             send_pack( gl_ush_flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;             send_pack( gl_ush_flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;             send_pack( gl_ush_flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;             send_pack( gl_ac_flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;             send_pack( gl_ac_flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;             send_pack( gl_ac_flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;             send_pack( gl_ac_flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;             send_pack( gl_ac_flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;             send_pack( gl_ac_flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;             send_pack( gl_ac_flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;             send_pack( gl_ac_flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;             send_pack( gl_ac_flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;            send_pack( gl_ac_flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;            send_pack( gl_ac_flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;            send_pack( gl_ac_flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;            send_pack( gl_ac_flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;            send_pack( gl_ac_flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;            send_pack( gl_ac_flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;            send_pack( gl_ac_flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;            send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   } //"мертвый" захват отказа раскачки виброподвеса
 }
@@ -303,40 +303,40 @@ void deadloop_no_tact( int nError) {
     processIncomingCommand();
 
     //выдача настроечных параметров
-    gl_nSentPackIndex = AMPLITUDE;    send_pack( gl_ush_flashParamAmplitudeCode);
-    gl_nSentPackIndex = TACT_CODE;    send_pack( gl_ush_flashParamTactCode);
-    gl_nSentPackIndex = M_COEFF;      send_pack( gl_ush_flashParamMCoeff);
-    gl_nSentPackIndex = STARTMODE;    send_pack( gl_ush_flashParamStartMode);
-    gl_nSentPackIndex = DECCOEFF;     send_pack( gl_ush_flashParamDecCoeff);
-    gl_nSentPackIndex = CONTROL_I1;   send_pack( gl_ush_flashParamI1min);
-    gl_nSentPackIndex = CONTROL_I2;   send_pack( gl_ush_flashParamI2min);
-    gl_nSentPackIndex = CONTROL_AA;   send_pack( gl_ush_flashParamAmplAngMin1);
+    gl_nSentPackIndex = AMPLITUDE;          send_pack( gl_ush_flashParamAmplitudeCode);
+    gl_nSentPackIndex = TACT_CODE;          send_pack( gl_ush_flashParamTactCode);
+    gl_nSentPackIndex = M_COEFF;            send_pack( gl_ush_flashParamMCoeff);
+    gl_nSentPackIndex = STARTMODE;          send_pack( gl_ush_flashParamStartMode);
+    gl_nSentPackIndex = DECCOEFF_CURRENT;   send_pack( gl_ush_flashParamDecCoeff);
+    gl_nSentPackIndex = CONTROL_I1;         send_pack( gl_ush_flashParamI1min);
+    gl_nSentPackIndex = CONTROL_I2;         send_pack( gl_ush_flashParamI2min);
+    gl_nSentPackIndex = CONTROL_AA;         send_pack( gl_ush_flashParamAmplAngMin1);
     gl_nSentPackIndex = HV_APPLY_COUNT_SET; send_pack( gl_ush_flashParamHvApplyCount);
     gl_nSentPackIndex = HV_APPLY_DURAT_SET; send_pack( gl_ush_flashParamHvApplyDurat);
     gl_nSentPackIndex = HV_APPLY_PACKS;     send_pack( gl_ush_flashParamHvApplyPacks);
     gl_nSentPackIndex = HV_APPLY_COUNT_TR;  send_pack( gl_ushFiringTry);
-    gl_nSentPackIndex = SIGNCOEFF;    send_pack( gl_ush_flashParamSignCoeff);
-    gl_nSentPackIndex = DEVNUM;       send_pack( gl_ush_flashParamDeviceId);
-    gl_nSentPackIndex = DATE_Y;       send_pack( gl_ush_flashParamDateYear);
-    gl_nSentPackIndex = DATE_M;       send_pack( gl_ush_flashParamDateMonth);
-    gl_nSentPackIndex = DATE_D;       send_pack( gl_ush_flashParamDateDay);
-    gl_nSentPackIndex = ORG_B1;       send_pack( gl_ac_flashParamOrg[ 0]);
-    gl_nSentPackIndex = ORG_B2;       send_pack( gl_ac_flashParamOrg[ 1]);
-    gl_nSentPackIndex = ORG_B3;       send_pack( gl_ac_flashParamOrg[ 2]);
-    gl_nSentPackIndex = ORG_B4;       send_pack( gl_ac_flashParamOrg[ 3]);
-    gl_nSentPackIndex = ORG_B5;       send_pack( gl_ac_flashParamOrg[ 4]);
-    gl_nSentPackIndex = ORG_B6;       send_pack( gl_ac_flashParamOrg[ 5]);
-    gl_nSentPackIndex = ORG_B7;       send_pack( gl_ac_flashParamOrg[ 6]);
-    gl_nSentPackIndex = ORG_B8;       send_pack( gl_ac_flashParamOrg[ 7]);
-    gl_nSentPackIndex = ORG_B9;       send_pack( gl_ac_flashParamOrg[ 8]);
-    gl_nSentPackIndex = ORG_B10;      send_pack( gl_ac_flashParamOrg[ 9]);
-    gl_nSentPackIndex = ORG_B11;      send_pack( gl_ac_flashParamOrg[ 10]);
-    gl_nSentPackIndex = ORG_B12;      send_pack( gl_ac_flashParamOrg[ 11]);
-    gl_nSentPackIndex = ORG_B13;      send_pack( gl_ac_flashParamOrg[ 12]);
-    gl_nSentPackIndex = ORG_B14;      send_pack( gl_ac_flashParamOrg[ 13]);
-    gl_nSentPackIndex = ORG_B15;      send_pack( gl_ac_flashParamOrg[ 14]);
-    gl_nSentPackIndex = ORG_B16;      send_pack( gl_ac_flashParamOrg[ 15]);
-    gl_nSentPackIndex = VERSION;      send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+    gl_nSentPackIndex = SIGNCOEFF;          send_pack( gl_ush_flashParamSignCoeff);
+    gl_nSentPackIndex = DEVNUM;             send_pack( gl_ush_flashParamDeviceId);
+    gl_nSentPackIndex = DATE_Y;             send_pack( gl_ush_flashParamDateYear);
+    gl_nSentPackIndex = DATE_M;             send_pack( gl_ush_flashParamDateMonth);
+    gl_nSentPackIndex = DATE_D;             send_pack( gl_ush_flashParamDateDay);
+    gl_nSentPackIndex = ORG_B1;             send_pack( gl_ac_flashParamOrg[ 0]);
+    gl_nSentPackIndex = ORG_B2;             send_pack( gl_ac_flashParamOrg[ 1]);
+    gl_nSentPackIndex = ORG_B3;             send_pack( gl_ac_flashParamOrg[ 2]);
+    gl_nSentPackIndex = ORG_B4;             send_pack( gl_ac_flashParamOrg[ 3]);
+    gl_nSentPackIndex = ORG_B5;             send_pack( gl_ac_flashParamOrg[ 4]);
+    gl_nSentPackIndex = ORG_B6;             send_pack( gl_ac_flashParamOrg[ 5]);
+    gl_nSentPackIndex = ORG_B7;             send_pack( gl_ac_flashParamOrg[ 6]);
+    gl_nSentPackIndex = ORG_B8;             send_pack( gl_ac_flashParamOrg[ 7]);
+    gl_nSentPackIndex = ORG_B9;             send_pack( gl_ac_flashParamOrg[ 8]);
+    gl_nSentPackIndex = ORG_B10;            send_pack( gl_ac_flashParamOrg[ 9]);
+    gl_nSentPackIndex = ORG_B11;            send_pack( gl_ac_flashParamOrg[ 10]);
+    gl_nSentPackIndex = ORG_B12;            send_pack( gl_ac_flashParamOrg[ 11]);
+    gl_nSentPackIndex = ORG_B13;            send_pack( gl_ac_flashParamOrg[ 12]);
+    gl_nSentPackIndex = ORG_B14;            send_pack( gl_ac_flashParamOrg[ 13]);
+    gl_nSentPackIndex = ORG_B15;            send_pack( gl_ac_flashParamOrg[ 14]);
+    gl_nSentPackIndex = ORG_B16;            send_pack( gl_ac_flashParamOrg[ 15]);
+    gl_nSentPackIndex = VERSION;            send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
 
   }  //"мертвый" while отсутствия тактирования
 }

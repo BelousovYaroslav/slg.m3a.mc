@@ -175,9 +175,9 @@ void processIncomingCommand( void) {
             gl_nSentPackIndex = STARTMODE;
           break;
 
-          case DECCOEFF: //Set decrement coeff
+          case DECCOEFF_CURRENT: //Set decrement coeff
             gl_ush_flashParamDecCoeff = gl_acInput_buffer[2] + ( ( ( short) gl_acInput_buffer[3]) << 8);
-            gl_nSentPackIndex = DECCOEFF;
+            gl_nSentPackIndex = DECCOEFF_CURRENT;
           break;
 
           case CONTROL_I1:  //Set control_i1
@@ -280,14 +280,14 @@ void processIncomingCommand( void) {
 
       case MC_COMMAND_REQ:
         switch( gl_acInput_buffer[1]) {
-          case AMPLITUDE:   gl_nSentPackIndex = AMPLITUDE;    break;
-          case TACT_CODE:   gl_nSentPackIndex = TACT_CODE;    break;
-          case M_COEFF:     gl_nSentPackIndex = M_COEFF;      break;
-          case STARTMODE:   gl_nSentPackIndex = STARTMODE;    break;
-          case DECCOEFF:    gl_nSentPackIndex = DECCOEFF;     break;
-          case CONTROL_I1:  gl_nSentPackIndex = CONTROL_I1;   break;
-          case CONTROL_I2:  gl_nSentPackIndex = CONTROL_I2;   break;
-          case CONTROL_AA:  gl_nSentPackIndex = CONTROL_AA;   break;
+          case AMPLITUDE:           gl_nSentPackIndex = AMPLITUDE;          break;
+          case TACT_CODE:           gl_nSentPackIndex = TACT_CODE;          break;
+          case M_COEFF:             gl_nSentPackIndex = M_COEFF;            break;
+          case STARTMODE:           gl_nSentPackIndex = STARTMODE;          break;
+          case DECCOEFF_CURRENT:    gl_nSentPackIndex = DECCOEFF_CURRENT;   break;
+          case CONTROL_I1:          gl_nSentPackIndex = CONTROL_I1;         break;
+          case CONTROL_I2:          gl_nSentPackIndex = CONTROL_I2;         break;
+          case CONTROL_AA:          gl_nSentPackIndex = CONTROL_AA;         break;
 
           case HV_APPLY_COUNT_SET:  gl_nSentPackIndex = HV_APPLY_COUNT_SET;   break;
           case HV_APPLY_COUNT_TR:   gl_nSentPackIndex = HV_APPLY_COUNT_TR;    break;

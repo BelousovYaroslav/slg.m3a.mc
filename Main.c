@@ -2219,54 +2219,54 @@ void main() {
             // PARAMETERS BY REQUEST
             //****************************************************************************************************************************************************************
 
-            case AMPLITUDE:       send_pack( gl_ush_flashParamAmplitudeCode);   gl_nSentPackIndex = UTD1;       break;  //Уставка амплитуды колебания
-            case TACT_CODE:       send_pack( gl_ush_flashParamTactCode);        gl_nSentPackIndex = UTD1;       break;  //Уставка кода такта подставки
-            case M_COEFF:         send_pack( gl_ush_flashParamMCoeff);          gl_nSentPackIndex = UTD1;       break;  //Уставка коэффициента ошумления
-            case STARTMODE:       send_pack( gl_ush_flashParamStartMode);       gl_nSentPackIndex = UTD1;       break;  //Уставка начальной моды
-            case DECCOEFF:        send_pack( gl_ush_flashParamDecCoeff);        gl_nSentPackIndex = UTD1;       break;  //Коэффициент вычета
-            case CONTROL_I1:      send_pack( gl_ush_flashParamI1min);           gl_nSentPackIndex = CONTROL_I2; break;  //flashParamI1min
-            case CONTROL_I2:      send_pack( gl_ush_flashParamI2min);           gl_nSentPackIndex = CONTROL_AA; break;  //flashParamI2min
-            case CONTROL_AA:      send_pack( gl_ush_flashParamAmplAngMin1);     gl_nSentPackIndex = UTD1;       break;  //flashParamAmplAngMin1
+            case AMPLITUDE:           send_pack( gl_ush_flashParamAmplitudeCode);   gl_nSentPackIndex = UTD1;       break;  //Уставка амплитуды колебания
+            case TACT_CODE:           send_pack( gl_ush_flashParamTactCode);        gl_nSentPackIndex = UTD1;       break;  //Уставка кода такта подставки
+            case M_COEFF:             send_pack( gl_ush_flashParamMCoeff);          gl_nSentPackIndex = UTD1;       break;  //Уставка коэффициента ошумления
+            case STARTMODE:           send_pack( gl_ush_flashParamStartMode);       gl_nSentPackIndex = UTD1;       break;  //Уставка начальной моды
+            case DECCOEFF_CURRENT:    send_pack( gl_ush_flashParamDecCoeff);        gl_nSentPackIndex = UTD1;       break;  //Коэффициент вычета
+            case CONTROL_I1:          send_pack( gl_ush_flashParamI1min);           gl_nSentPackIndex = CONTROL_I2; break;  //flashParamI1min
+            case CONTROL_I2:          send_pack( gl_ush_flashParamI2min);           gl_nSentPackIndex = CONTROL_AA; break;  //flashParamI2min
+            case CONTROL_AA:          send_pack( gl_ush_flashParamAmplAngMin1);     gl_nSentPackIndex = UTD1;       break;  //flashParamAmplAngMin1
 
-            case HV_APPLY_COUNT_SET: send_pack( gl_ush_flashParamHvApplyCount); gl_nSentPackIndex = UTD1;       break;  //HV apply cycles in pack
-            case HV_APPLY_COUNT_TR:  send_pack( gl_ushFiringTry);               gl_nSentPackIndex = UTD1;       break;  //HV apply cycles applied in this run
-            case HV_APPLY_DURAT_SET: send_pack( gl_ush_flashParamHvApplyDurat); gl_nSentPackIndex = UTD1;       break;  //HV apply cycle duration
-            case HV_APPLY_PACKS:     send_pack( gl_ush_flashParamHvApplyPacks); gl_nSentPackIndex = UTD1;       break;  //HV apply packs
+            case HV_APPLY_COUNT_SET:  send_pack( gl_ush_flashParamHvApplyCount);    gl_nSentPackIndex = UTD1;       break;  //HV apply cycles in pack
+            case HV_APPLY_COUNT_TR:   send_pack( gl_ushFiringTry);                  gl_nSentPackIndex = UTD1;       break;  //HV apply cycles applied in this run
+            case HV_APPLY_DURAT_SET:  send_pack( gl_ush_flashParamHvApplyDurat);    gl_nSentPackIndex = UTD1;       break;  //HV apply cycle duration
+            case HV_APPLY_PACKS:      send_pack( gl_ush_flashParamHvApplyPacks);    gl_nSentPackIndex = UTD1;       break;  //HV apply packs
 
-            case SIGNCOEFF:       send_pack( gl_ush_flashParamSignCoeff);       gl_nSentPackIndex = UTD1;       break;  //Уставка знакового коэффициента
-            case DEVNUM:          send_pack( gl_ush_flashParamDeviceId);        gl_nSentPackIndex = UTD1;       break;  //Device_Num
+            case SIGNCOEFF:           send_pack( gl_ush_flashParamSignCoeff);       gl_nSentPackIndex = UTD1;       break;  //Уставка знакового коэффициента
+            case DEVNUM:              send_pack( gl_ush_flashParamDeviceId);        gl_nSentPackIndex = UTD1;       break;  //Device_Num
 
-            case DATE_Y:          send_pack( gl_ush_flashParamDateYear);        gl_nSentPackIndex = UTD1;       break;  //Date.Year
-            case DATE_M:          send_pack( gl_ush_flashParamDateMonth);       gl_nSentPackIndex = UTD1;       break;  //Date.Month
-            case DATE_D:          send_pack( gl_ush_flashParamDateDay);         gl_nSentPackIndex = UTD1;       break;  //Date.Day
+            case DATE_Y:              send_pack( gl_ush_flashParamDateYear);        gl_nSentPackIndex = UTD1;       break;  //Date.Year
+            case DATE_M:              send_pack( gl_ush_flashParamDateMonth);       gl_nSentPackIndex = UTD1;       break;  //Date.Month
+            case DATE_D:              send_pack( gl_ush_flashParamDateDay);         gl_nSentPackIndex = UTD1;       break;  //Date.Day
 
-            case ORG_B1:          send_pack( gl_ac_flashParamOrg[ 0]);          gl_nSentPackIndex = ORG_B2;     break;  //Organization.Byte1
-            case ORG_B2:          send_pack( gl_ac_flashParamOrg[ 1]);          gl_nSentPackIndex = ORG_B3;     break;  //Organization.Byte2
-            case ORG_B3:          send_pack( gl_ac_flashParamOrg[ 2]);          gl_nSentPackIndex = ORG_B4;     break;  //Organization.Byte3
-            case ORG_B4:          send_pack( gl_ac_flashParamOrg[ 3]);          gl_nSentPackIndex = ORG_B5;     break;  //Organization.Byte4
-            case ORG_B5:          send_pack( gl_ac_flashParamOrg[ 4]);          gl_nSentPackIndex = ORG_B6;     break;  //Organization.Byte5
-            case ORG_B6:          send_pack( gl_ac_flashParamOrg[ 5]);          gl_nSentPackIndex = ORG_B7;     break;  //Organization.Byte6
-            case ORG_B7:          send_pack( gl_ac_flashParamOrg[ 6]);          gl_nSentPackIndex = ORG_B8;     break;  //Organization.Byte7
-            case ORG_B8:          send_pack( gl_ac_flashParamOrg[ 7]);          gl_nSentPackIndex = ORG_B9;     break;  //Organization.Byte8
-            case ORG_B9:          send_pack( gl_ac_flashParamOrg[ 8]);          gl_nSentPackIndex = ORG_B10;    break;  //Organization.Byte9
-            case ORG_B10:         send_pack( gl_ac_flashParamOrg[ 9]);          gl_nSentPackIndex = ORG_B11;    break;  //Organization.Byte10
-            case ORG_B11:         send_pack( gl_ac_flashParamOrg[10]);          gl_nSentPackIndex = ORG_B12;    break;  //Organization.Byte11
-            case ORG_B12:         send_pack( gl_ac_flashParamOrg[11]);          gl_nSentPackIndex = ORG_B13;    break;  //Organization.Byte12
-            case ORG_B13:         send_pack( gl_ac_flashParamOrg[12]);          gl_nSentPackIndex = ORG_B14;    break;  //Organization.Byte13
-            case ORG_B14:         send_pack( gl_ac_flashParamOrg[13]);          gl_nSentPackIndex = ORG_B15;    break;  //Organization.Byte14
-            case ORG_B15:         send_pack( gl_ac_flashParamOrg[14]);          gl_nSentPackIndex = ORG_B16;    break;  //Organization.Byte15
-            case ORG_B16:         send_pack( gl_ac_flashParamOrg[15]);          gl_nSentPackIndex = UTD1;       break;  //Organization.Byte16    БЕЗ завершающего 0 на конце!!!!!
+            case ORG_B1:              send_pack( gl_ac_flashParamOrg[ 0]);          gl_nSentPackIndex = ORG_B2;     break;  //Organization.Byte1
+            case ORG_B2:              send_pack( gl_ac_flashParamOrg[ 1]);          gl_nSentPackIndex = ORG_B3;     break;  //Organization.Byte2
+            case ORG_B3:              send_pack( gl_ac_flashParamOrg[ 2]);          gl_nSentPackIndex = ORG_B4;     break;  //Organization.Byte3
+            case ORG_B4:              send_pack( gl_ac_flashParamOrg[ 3]);          gl_nSentPackIndex = ORG_B5;     break;  //Organization.Byte4
+            case ORG_B5:              send_pack( gl_ac_flashParamOrg[ 4]);          gl_nSentPackIndex = ORG_B6;     break;  //Organization.Byte5
+            case ORG_B6:              send_pack( gl_ac_flashParamOrg[ 5]);          gl_nSentPackIndex = ORG_B7;     break;  //Organization.Byte6
+            case ORG_B7:              send_pack( gl_ac_flashParamOrg[ 6]);          gl_nSentPackIndex = ORG_B8;     break;  //Organization.Byte7
+            case ORG_B8:              send_pack( gl_ac_flashParamOrg[ 7]);          gl_nSentPackIndex = ORG_B9;     break;  //Organization.Byte8
+            case ORG_B9:              send_pack( gl_ac_flashParamOrg[ 8]);          gl_nSentPackIndex = ORG_B10;    break;  //Organization.Byte9
+            case ORG_B10:             send_pack( gl_ac_flashParamOrg[ 9]);          gl_nSentPackIndex = ORG_B11;    break;  //Organization.Byte10
+            case ORG_B11:             send_pack( gl_ac_flashParamOrg[10]);          gl_nSentPackIndex = ORG_B12;    break;  //Organization.Byte11
+            case ORG_B12:             send_pack( gl_ac_flashParamOrg[11]);          gl_nSentPackIndex = ORG_B13;    break;  //Organization.Byte12
+            case ORG_B13:             send_pack( gl_ac_flashParamOrg[12]);          gl_nSentPackIndex = ORG_B14;    break;  //Organization.Byte13
+            case ORG_B14:             send_pack( gl_ac_flashParamOrg[13]);          gl_nSentPackIndex = ORG_B15;    break;  //Organization.Byte14
+            case ORG_B15:             send_pack( gl_ac_flashParamOrg[14]);          gl_nSentPackIndex = ORG_B16;    break;  //Organization.Byte15
+            case ORG_B16:             send_pack( gl_ac_flashParamOrg[15]);          gl_nSentPackIndex = UTD1;       break;  //Organization.Byte16    БЕЗ завершающего 0 на конце!!!!!
 
-            case VERSION:         send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE)); gl_nSentPackIndex = UTD1; break; //SOFTWARE VERSION
+            case VERSION:             send_pack( ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE)); gl_nSentPackIndex = UTD1; break; //SOFTWARE VERSION
 
-            case CALIB_T1:        send_pack( gl_ush_flashParam_calibT1);        gl_nSentPackIndex = T1_TD1;     break;  //min thermo-calib point T
-            case T1_TD1:          send_pack( gl_ush_flashParamT1_TD1_val);      gl_nSentPackIndex = T1_TD2;     break;  //min thermo-calib point thermo1 data
-            case T1_TD2:          send_pack( gl_ush_flashParamT1_TD2_val);      gl_nSentPackIndex = T1_TD3;     break;  //min thermo-calib point thermo2 data
-            case T1_TD3:          send_pack( gl_ush_flashParamT1_TD3_val);      gl_nSentPackIndex = CALIB_T2;   break;  //min thermo-calib point thermo3 data
-            case CALIB_T2:        send_pack( gl_ush_flashParam_calibT2);        gl_nSentPackIndex = T2_TD1;     break;  //max thermo-calib point T
-            case T2_TD1:          send_pack( gl_ush_flashParamT2_TD1_val);      gl_nSentPackIndex = T2_TD2;     break;  //max thermo-calib point thermo1 data
-            case T2_TD2:          send_pack( gl_ush_flashParamT2_TD2_val);      gl_nSentPackIndex = T2_TD3;     break;  //max thermo-calib point thermo2 data
-            case T2_TD3:          send_pack( gl_ush_flashParamT2_TD3_val);      gl_nSentPackIndex = UTD1;       break;  //max thermo-calib point thermo3 data
+            case CALIB_T1:            send_pack( gl_ush_flashParam_calibT1);        gl_nSentPackIndex = T1_TD1;     break;  //min thermo-calib point T
+            case T1_TD1:              send_pack( gl_ush_flashParamT1_TD1_val);      gl_nSentPackIndex = T1_TD2;     break;  //min thermo-calib point thermo1 data
+            case T1_TD2:              send_pack( gl_ush_flashParamT1_TD2_val);      gl_nSentPackIndex = T1_TD3;     break;  //min thermo-calib point thermo2 data
+            case T1_TD3:              send_pack( gl_ush_flashParamT1_TD3_val);      gl_nSentPackIndex = CALIB_T2;   break;  //min thermo-calib point thermo3 data
+            case CALIB_T2:            send_pack( gl_ush_flashParam_calibT2);        gl_nSentPackIndex = T2_TD1;     break;  //max thermo-calib point T
+            case T2_TD1:              send_pack( gl_ush_flashParamT2_TD1_val);      gl_nSentPackIndex = T2_TD2;     break;  //max thermo-calib point thermo1 data
+            case T2_TD2:              send_pack( gl_ush_flashParamT2_TD2_val);      gl_nSentPackIndex = T2_TD3;     break;  //max thermo-calib point thermo2 data
+            case T2_TD3:              send_pack( gl_ush_flashParamT2_TD3_val);      gl_nSentPackIndex = UTD1;       break;  //max thermo-calib point thermo3 data
 
           }
         }
@@ -2292,7 +2292,7 @@ void main() {
               gl_ush_flashParamDecCoeff = ( short) ( gl_dbl_Nsumm / gl_dbl_Usumm * 65535.);
               gl_dbl_Nsumm = gl_dbl_Usumm = 0.;
               gl_un_DecCoeffStatPoints = 0;
-              gl_nSentPackIndex = DECCOEFF;
+              gl_nSentPackIndex = DECCOEFF_CURRENT;
             }
           }
         }
