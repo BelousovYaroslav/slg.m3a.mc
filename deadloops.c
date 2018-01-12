@@ -17,7 +17,6 @@ extern signed short gl_ssh_angle_inc;
 extern signed short gl_ssh_angle_inc_prev;
 extern short gl_nSentPackIndex;
 
-#define IN_COMMAND_BUF_LEN 3
 extern char gl_cPos_in_in_buf;
 extern char gl_acInput_buffer[];
 

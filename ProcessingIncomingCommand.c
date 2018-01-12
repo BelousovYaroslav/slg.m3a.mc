@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "McCommands.h"
 
+#include "Main.h"
 #include "debug.h"
 
 //declared in Main.c
@@ -71,9 +72,6 @@ extern signed short     gl_ush_flashParam_calibT2;
 extern unsigned short   gl_ush_flashParamT2_TD1_val, gl_ush_flashParamT2_TD2_val, gl_ush_flashParamT2_TD3_val;
 
 extern char gl_chLockBit;         //флаг блокирования устройства: 0 - режим "настройки"   1 - режим "пользователя"
-
-//DOUBLE DEFINITION!!!!!!!!!!! Original is declared in Main.c
-#define IN_COMMAND_BUF_LEN 4                //длина буфера входящих команд
 
 extern void configure_hanger( void);
 extern void DACConfiguration( void);

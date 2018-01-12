@@ -10,6 +10,7 @@
 #include "version.h"
 #include "AnalogueParamsConstList.h"
 #include "debug.h"
+#include "Main.h"
 
 #define RULA_MAX 4090
 #define RULA_MIN 25
@@ -65,7 +66,6 @@ unsigned short  gl_ush_flashParamT2_TD1_val, gl_ush_flashParamT2_TD2_val, gl_ush
 //********************
 char gl_c_EmergencyCode = 0;    //код ошибки прибора
 
-#define IN_COMMAND_BUF_LEN 4                //длина буфера входящих команд
 char gl_acInput_buffer[6] = { 0, 0, 0, 0, 0, 0}; //буфер входящих команд
 char gl_cPos_in_in_buf = 0;                     //позиция записи в буфере входящих команд
 
@@ -146,15 +146,6 @@ int ADCChannel = 0;           //читаемый канал АЦП
                               //5 = ADC6 =  3 нога = UTD2
                               //6 = ADC7 = ?? нога = UTD3
                               //7 = ADC8 = ?? нога = AmplAng
-
-#define BIT_0 1
-#define BIT_1 2
-#define BIT_2 4
-#define BIT_3 8
-#define BIT_4 16
-#define BIT_5 32
-#define BIT_6 64
-#define BIT_7 128
 
 //число включений HV при поджиге
 unsigned short gl_ushFiringTry = 0;
