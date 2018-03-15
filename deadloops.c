@@ -505,3 +505,122 @@ void deadloop_current_unstable( void) {
 
   } //"мертвый" while
 }
+
+void deadloop_vibration_lost() {
+  //ОБРАБОТКА ПОТЕРИ ВИБРАЦИИ
+#ifdef DEBUG
+  printf("DBG: VIBRATION LOST! DEADLOOP.\n");
+#endif
+
+  //выставляем код ошибки
+  gl_c_EmergencyCode = ERROR_VIBRATION_LOST;
+
+  //высылка настроечных параметров
+  send_pack( 0, 7, flashParamAmplitudeCode);
+  send_pack( 0, 8, flashParamTactCode);
+  send_pack( 0, 9, flashParamMCoeff);
+  send_pack( 0, 10, flashParamStartMode);
+  send_pack( 0, 11, flashParamI1min);
+  send_pack( 0, 12, flashParamI2min);
+  send_pack( 0, 13, flashParamAmplAngMin1);
+  send_pack( 0, 14, flashParamDecCoeff);
+  send_pack( 0, 15, flashParamSignCoeff);
+  send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+
+  gl_n_prT1VAL = T1VAL;
+  while( 1) {
+    //пауза 0,1 секунда
+    pause( 327);
+
+    gl_ssh_SA_time = ( unsigned short) ( T1LD + gl_n_prT1VAL - T1VAL) % T1LD;
+    gl_n_prT1VAL = T1VAL;
+
+    //**********************************************************************
+    // Обработка буфера входящих команд
+    //**********************************************************************
+    if( pos_in_in_buf == IN_COMMAND_BUF_LEN) {
+      switch( input_buffer[0]) {
+        case 0: //установить код амплитуды
+          flashParamAmplitudeCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 7, flashParamAmplitudeCode);
+        break;
+
+        case 1: //установить код такта подставки
+          flashParamTactCode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 8, flashParamTactCode);
+        break;
+
+        case 2: //установить коэффициент M
+          flashParamMCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 9, flashParamMCoeff);
+        break;
+
+        case 3: //установить начальную моду
+          flashParamStartMode = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 10, flashParamStartMode);
+        break;
+        
+        case 4: //установить минимальный ток I1
+          flashParamI1min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 11, flashParamI1min);
+        break;
+
+        case 5: //установить минимальный ток I2
+          flashParamI2min = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 12, flashParamI2min);
+        break;
+
+        case 6: //установить 1ый минимум сигнала AmplAng
+          flashParamAmplAngMin1 = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 13, flashParamAmplAngMin1);
+        break;
+
+        case 7: //установить коэффициент вычета
+          flashParamDecCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 14, flashParamDecCoeff);
+        break;
+
+        case 8: ////установить знаковый коэффициент dU
+          flashParamSignCoeff = input_buffer[1] + ( ( ( short) input_buffer[2]) << 8);
+          send_pack( 0, 15, flashParamSignCoeff);
+        break;
+
+        /*
+        case 9: //в асинхр. режиме вылючить вывод SA (включить вывод dU)
+          bAsyncDu = 1;
+        break;
+
+        case 10: //в асинхр. режиме выключить вывод dU (включить вывод SA)
+          bAsyncDu = 0;
+        break; */
+
+        case 49: //запрос параметров
+          send_pack( 0, 7, flashParamAmplitudeCode);
+          send_pack( 0, 8, flashParamTactCode);
+          send_pack( 0, 9, flashParamMCoeff);
+          send_pack( 0, 10, flashParamStartMode);
+          send_pack( 0, 11, flashParamI1min);
+          send_pack( 0, 12, flashParamI2min);
+          send_pack( 0, 13, flashParamAmplAngMin1);
+          send_pack( 0, 14, flashParamDecCoeff);
+          send_pack( 0, 15, flashParamSignCoeff);
+          send_pack( 0, 16, ( ( VERSION_MINOR * 16) << 8) + (VERSION_MAJOR * 16 + VERSION_MIDDLE));
+        break;
+
+        case 50: //сохранить параметры во флэш память
+          save_params(); break;
+
+        case 51: //перезагрузить параметры из флэш-памяти и показать их
+          load_params(); break;
+      }
+
+      pos_in_in_buf = 0;
+    }
+    else {
+      //Если входящих команд не было, то
+      //посылка пустого сообщения с ошибкой
+      send_pack( 0, 0, 0);
+    }
+
+  } //"мертвый" while
+}
