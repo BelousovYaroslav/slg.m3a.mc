@@ -985,7 +985,8 @@ void SimpleTest() {
 }
 
 void main() {
-  //unsigned short ush_SA_check_time;
+  int n_SA_check_time;
+  int n_prT2VAL;
   //unsigned char jchar = 0x30; 
   int time = 20000;
   int i, k, val;
@@ -1822,6 +1823,7 @@ void main() {
   */
 
   gl_nT2StartDataOut = T2VAL;
+  n_prT2VAL = T2VAL;
 
   //FAKE ('VERACITY DATA' flag on)
   gl_b_PerimeterReset = 1;
@@ -1875,6 +1877,7 @@ void main() {
                                // а результат исследования 02.02.2017 показал что скорее врёт кварц дающий исходные 32768Hz, поэтому комментим строку выше
                                // 03.02.2017 Со слов Сережи кварц так не врёт - поэтому делаем вывод что врёт коэффициент перед PLL (1085), но плюсовать по прежнему ничего не надо
         gl_n_prT1VAL = T1VAL;
+        n_prT2VAL = T2VAL;
 
         //Руководство к действиям:
         //сразу же по пришествию сигнала SA:
@@ -2613,12 +2616,11 @@ void main() {
       //если линия сигнала SA в низком уровне - то как только она поднимется начнется новый необработанный такт
       gl_b_SA_Processed = 0;
 
-      /*
       //проверка тактирования
-      ush_SA_check_time = ( T1LD + gl_ssh_prT1VAL - T1VAL) % T1LD;
+      n_SA_check_time = ( T2LD + n_prT2VAL - T2VAL) % T2LD;
 
       //2 sec = 32768 * 2.0 = 65536
-      if( ush_SA_check_time > 65536) {
+      if( n_SA_check_time > 65536) {
         //пропало тактирование
 
         //отключаем горение
@@ -2626,7 +2628,7 @@ void main() {
 
         deadloop_no_tact( ERROR_TACT_SIGNAL_LOST);
 
-      }*/
+      }
     }
   }
 }
