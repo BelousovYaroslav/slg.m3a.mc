@@ -9,5 +9,6 @@
 #define ERROR_NO_TACT_SIGNAL             5
 #define ERROR_TACT_SIGNAL_LOST           6
 #define ERROR_CURRENT_UNSTABLE           7
+#define ERROR_VIBRATION_LOST             8
 
 #endif
